@@ -1,10 +1,5 @@
 package org.yanzi.camera.preview;
 
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
-
-import org.yanzi.camera.CameraInterface;
-
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES11Ext;
@@ -13,6 +8,11 @@ import android.opengl.GLSurfaceView;
 import android.opengl.GLSurfaceView.Renderer;
 import android.util.AttributeSet;
 import android.util.Log;
+
+import org.yanzi.camera.CameraInterface;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
 
 public class CameraGLSurfaceView extends GLSurfaceView implements Renderer, SurfaceTexture.OnFrameAvailableListener {
 	private static final String TAG = "yanzi";
@@ -45,7 +45,7 @@ public class CameraGLSurfaceView extends GLSurfaceView implements Renderer, Surf
 		Log.i(TAG, "onSurfaceChanged...");
 		GLES20.glViewport(0, 0, width, height);
 		if(!CameraInterface.getInstance().isPreviewing()){
-			CameraInterface.getInstance().doStartPreview(mSurface, 1.33f);
+			CameraInterface.getInstance().doStartPreview(mSurface, 1.8f);
 		}
 	
 
