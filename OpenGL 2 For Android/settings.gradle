@@ -1,2 +1,4 @@
 include ':app'
 include ':airHockey1'
+include ':airHockey2'
+include ':airHockey3D'
