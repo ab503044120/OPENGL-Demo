@@ -8,6 +8,20 @@
 ***/
 package com.airhockey.android;
 
+import android.content.Context;
+import android.opengl.GLSurfaceView.Renderer;
+
+import com.airhockey.android.util.LoggerConfig;
+import com.airhockey.android.util.ShaderHelper;
+import com.airhockey.android.util.TextResourceReader;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
+
 import static android.opengl.GLES20.GL_COLOR_BUFFER_BIT;
 import static android.opengl.GLES20.GL_FLOAT;
 import static android.opengl.GLES20.GL_LINES;
@@ -23,20 +37,6 @@ import static android.opengl.GLES20.glUniform4f;
 import static android.opengl.GLES20.glUseProgram;
 import static android.opengl.GLES20.glVertexAttribPointer;
 import static android.opengl.GLES20.glViewport;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
-
-import android.content.Context;
-import android.opengl.GLSurfaceView.Renderer;
-
-import com.airhockey.android.util.LoggerConfig;
-import com.airhockey.android.util.ShaderHelper;
-import com.airhockey.android.util.TextResourceReader;
 
 public class AirHockeyRenderer implements Renderer {
     private static final String U_COLOR = "u_Color";
@@ -154,7 +154,7 @@ public class AirHockeyRenderer implements Renderer {
         // Bind our data, specified by the variable vertexData, to the vertex
         // attribute at location A_POSITION_LOCATION.
         vertexData.position(0);
-        glVertexAttribPointer(aPositionLocation, POSITION_COMPONENT_COUNT, GL_FLOAT, 
+        glVertexAttribPointer(aPositionLocation, POSITION_COMPONENT_COUNT, GL_FLOAT,
             false, 0, vertexData);
 
         glEnableVertexAttribArray(aPositionLocation);

@@ -8,8 +8,8 @@ due to bugs, placing projects in directories containing spaces in the
 path, or characters like ", ' and &, have had issues. We're working to
 eliminate these bugs, but to save yourself headaches you may want to
 move your project to a location where this is not a problem.
-D:\MyWork\ggh\code\OPENGL Demo\OpenGL 2 For Android
-                         -           - -   -       
+E:\Demo\live\OPENGL-Demo\OpenGL 2 For Android
+                               - -   -       
 
 Ignored Files:
 --------------
@@ -25,9 +25,9 @@ Moved Files:
 Android Gradle projects use a different directory structure than ADT
 Eclipse projects. Here's how the projects were restructured:
 
-* AndroidManifest.xml => airHockey3D\src\main\AndroidManifest.xml
-* res\ => airHockey3D\src\main\res\
-* src\ => airHockey3D\src\main\java\
+* AndroidManifest.xml => airHockeyTextured\src\main\AndroidManifest.xml
+* res\ => airHockeyTextured\src\main\res\
+* src\ => airHockeyTextured\src\main\java\
 
 Next Steps:
 -----------
