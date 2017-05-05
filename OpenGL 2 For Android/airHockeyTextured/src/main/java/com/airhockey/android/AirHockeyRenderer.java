@@ -8,18 +8,6 @@
 ***/
 package com.airhockey.android;
 
-import static android.opengl.GLES20.GL_COLOR_BUFFER_BIT;
-import static android.opengl.GLES20.glClear;
-import static android.opengl.GLES20.glClearColor;
-import static android.opengl.GLES20.glViewport;
-import static android.opengl.Matrix.multiplyMM;
-import static android.opengl.Matrix.rotateM;
-import static android.opengl.Matrix.setIdentityM;
-import static android.opengl.Matrix.translateM;
-
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
-
 import android.content.Context;
 import android.opengl.GLSurfaceView.Renderer;
 
@@ -29,6 +17,18 @@ import com.airhockey.android.programs.ColorShaderProgram;
 import com.airhockey.android.programs.TextureShaderProgram;
 import com.airhockey.android.util.MatrixHelper;
 import com.airhockey.android.util.TextureHelper;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
+
+import static android.opengl.GLES20.GL_COLOR_BUFFER_BIT;
+import static android.opengl.GLES20.glClear;
+import static android.opengl.GLES20.glClearColor;
+import static android.opengl.GLES20.glViewport;
+import static android.opengl.Matrix.multiplyMM;
+import static android.opengl.Matrix.rotateM;
+import static android.opengl.Matrix.setIdentityM;
+import static android.opengl.Matrix.translateM;
 
 public class AirHockeyRenderer implements Renderer {
     private final Context context;
