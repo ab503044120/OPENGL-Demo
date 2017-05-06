@@ -25,9 +25,9 @@ Moved Files:
 Android Gradle projects use a different directory structure than ADT
 Eclipse projects. Here's how the projects were restructured:
 
-* AndroidManifest.xml => airHockeyWithBetterMallets\src\main\AndroidManifest.xml
-* res\ => airHockeyWithBetterMallets\src\main\res\
-* src\ => airHockeyWithBetterMallets\src\main\java\
+* AndroidManifest.xml => heightmap\src\main\AndroidManifest.xml
+* res\ => heightmap\src\main\res\
+* src\ => heightmap\src\main\java\
 
 Next Steps:
 -----------
