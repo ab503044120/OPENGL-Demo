@@ -22,6 +22,19 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        surface.onDestroy();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        surface.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        surface.onPause();
     }
 
     /**

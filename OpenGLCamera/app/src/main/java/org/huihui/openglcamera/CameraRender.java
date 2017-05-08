@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.util.Log;
 
 import org.huihui.openglcamera.utils.TextureHelper;
 
@@ -23,14 +24,15 @@ import static android.opengl.GLES20.glViewport;
 
 public class CameraRender implements GLSurfaceView.Renderer {
 
-
-    private final Context mContext;
-    private final int mTextureId;
-    private final SurfaceTexture mSurfaceTexture;
-    private final VertexArray mVertexArray;
-    private final ShortBuffer drawListBuffer;
+    private final GLSurfaceView mGLSurfaceView;
+    private String TAG = "CameraRender";
+    private Context mContext;
+    private int mTextureId;
+    private SurfaceTexture mSurfaceTexture;
+    private VertexArray mVertexArray;
+    private ShortBuffer drawListBuffer;
     private CameraProgram mCameraProgram;
-    private final float[] mVext = {
+    private float[] mVext = {
             -1.0f, 1.0f, 0.0f, 1.0f,
             -1.0f, -1.0f, 1.0f, 1.0f,
             1.0f, -1.0f, 1.0f, 0.0f,
@@ -39,17 +41,9 @@ public class CameraRender implements GLSurfaceView.Renderer {
     };
     private short drawOrder[] = {0, 1, 2, 0, 2, 3}; // order to draw vertices
 
-    public CameraRender(Context context) {
+    public CameraRender(Context context, GLSurfaceView GLSurfaceView) {
         mContext = context;
-        mTextureId = TextureHelper.genTexture();
-        mSurfaceTexture = new SurfaceTexture(mTextureId);
-        mVertexArray = new VertexArray(mVext);
-        ByteBuffer dlb = ByteBuffer.allocateDirect(drawOrder.length * 2);
-        dlb.order(ByteOrder.nativeOrder());
-        drawListBuffer = dlb.asShortBuffer();
-        drawListBuffer.put(drawOrder);
-        drawListBuffer.position(0);
-
+        mGLSurfaceView = GLSurfaceView;
     }
 
     public SurfaceTexture getTextureSurface() {
@@ -58,8 +52,22 @@ public class CameraRender implements GLSurfaceView.Renderer {
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+        mTextureId = TextureHelper.genTexture();
+        mSurfaceTexture = new SurfaceTexture(mTextureId);
+        mVertexArray = new VertexArray(mVext);
+        ByteBuffer dlb = ByteBuffer.allocateDirect(drawOrder.length * 2);
+        dlb.order(ByteOrder.nativeOrder());
+        drawListBuffer = dlb.asShortBuffer();
+        drawListBuffer.put(drawOrder);
+        drawListBuffer.position(0);
         CameraHelper.getInstance().open();
         mCameraProgram = new CameraProgram(mContext);
+        mSurfaceTexture.setOnFrameAvailableListener(new SurfaceTexture.OnFrameAvailableListener() {
+            @Override
+            public void onFrameAvailable(SurfaceTexture surfaceTexture) {
+                mGLSurfaceView.requestRender();
+            }
+        });
     }
 
     @Override
@@ -78,6 +86,10 @@ public class CameraRender implements GLSurfaceView.Renderer {
     public void onDrawFrame(GL10 gl) {
         GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+        if (mSurfaceTexture == null) {
+            Log.e(TAG, "mSurfaceTexture is null");
+            return;
+        }
         mSurfaceTexture.updateTexImage();
         mCameraProgram.useProgram();
         mCameraProgram.bindTexture(mTextureId);
@@ -88,4 +100,11 @@ public class CameraRender implements GLSurfaceView.Renderer {
         GLES20.glDisableVertexAttribArray(mCameraProgram.aTextureCoordinatesLocation);
     }
 
+    public void notifyPausing() {
+        if (mSurfaceTexture != null) {
+            mSurfaceTexture.release();
+            mSurfaceTexture = null;
+        }
+
+    }
 }

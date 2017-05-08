@@ -1,7 +1,6 @@
 package org.huihui.openglcamera;
 
 import android.content.Context;
-import android.graphics.SurfaceTexture;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 
@@ -23,17 +22,28 @@ public class CameraGLSurfaceView extends GLSurfaceView {
 
     private void init() {
         setEGLContextClientVersion(2);
-        mRenderer = new CameraRender(getContext());
+        mRenderer = new CameraRender(getContext(),this);
         setRenderer(mRenderer);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-        mRenderer.getTextureSurface().setOnFrameAvailableListener(new SurfaceTexture.OnFrameAvailableListener() {
-            @Override
-            public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-                requestRender();
-            }
-        });
-
     }
 
+    protected void onDestroy() {
+        CameraHelper.getInstance().realse();
+    }
+
+    public void onResume() {
+        super.onResume();
+    }
+
+    public void onPause() {
+        CameraHelper.getInstance().realse();
+        queueEvent(new Runnable() {
+            @Override public void run() {
+                // 跨进程 清空 Renderer数据
+                mRenderer.notifyPausing();
+            }
+        });
+        super.onPause();
+    }
 
 }
