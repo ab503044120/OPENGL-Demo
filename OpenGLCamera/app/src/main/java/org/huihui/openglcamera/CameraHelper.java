@@ -13,6 +13,7 @@ import java.util.List;
  */
 
 public class CameraHelper {
+    private static CameraHelper sCameraHelper;
     private final int STATE_CLOSE = 0;
     private final int STATE_OPEN = 1;
 
@@ -20,19 +21,26 @@ public class CameraHelper {
     private Camera mCamera;
 
     public static CameraHelper getInstance() {
-        return new CameraHelper();
+        if (sCameraHelper == null) {
+            synchronized (CameraHelper.class) {
+                if (sCameraHelper == null) {
+                    sCameraHelper = new CameraHelper();
+                }
+            }
+        }
+        return sCameraHelper;
     }
 
     private CameraHelper() {
     }
 
-    private void init(Camera camera, boolean isTouchMode) {
-        Camera.Parameters parameters = camera.getParameters();
-        setPreviewFormat(camera, parameters);
-        setPreviewFps(camera, 15, parameters);
-        setPreviewSize(camera, 1080, 1920, parameters);
-        setOrientation(false, camera);
-        setFocusMode(camera, isTouchMode);
+    public void init(boolean isTouchMode, int height, int width) {
+        Camera.Parameters parameters = mCamera.getParameters();
+        setPreviewFormat(mCamera, parameters);
+        setPreviewFps(mCamera, 15, parameters);
+        setPreviewSize(mCamera, height, width, parameters);
+        setOrientation(false, mCamera);
+        setFocusMode(mCamera, isTouchMode);
     }
 
     public void open() {
@@ -40,7 +48,7 @@ public class CameraHelper {
             return;
         }
         mCamera = Camera.open();
-        init(mCamera, false);
+        state = STATE_OPEN;
     }
 
     public void setPreviewSurface(SurfaceTexture previewSurface) throws IOException {
@@ -48,11 +56,13 @@ public class CameraHelper {
             mCamera.setPreviewTexture(previewSurface);
         }
     }
+
     public void setPreviewSurface(SurfaceHolder previewSurface) throws IOException {
         if (mCamera != null) {
             mCamera.setPreviewDisplay(previewSurface);
         }
     }
+
     public void startPreview() {
         if (mCamera != null) {
             mCamera.startPreview();
@@ -67,7 +77,9 @@ public class CameraHelper {
 
     public void realse() {
         if (state == STATE_OPEN && mCamera != null) {
+            mCamera.stopPreview();
             mCamera.release();
+            state = STATE_CLOSE;
         }
     }
 
@@ -115,7 +127,7 @@ public class CameraHelper {
     }
 
     private static void setPreviewSize(Camera camera, int width, int height,
-                                      Camera.Parameters parameters) {
+                                       Camera.Parameters parameters) {
         Camera.Size size = getOptimalPreviewSize(camera, width, height);
 
         //设置预览大小
