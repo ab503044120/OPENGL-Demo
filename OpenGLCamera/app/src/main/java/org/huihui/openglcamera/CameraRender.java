@@ -16,7 +16,7 @@ import java.nio.ShortBuffer;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import static android.opengl.GLES20.glViewport;
+import static android.opengl.GLES20.*;
 
 /**
  * Created by Administrator on 2017/5/6.
@@ -85,7 +85,6 @@ public class CameraRender implements GLSurfaceView.Renderer {
     @Override
     public void onDrawFrame(GL10 gl) {
         GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
         if (mSurfaceTexture == null) {
             Log.e(TAG, "mSurfaceTexture is null");
             return;
@@ -95,9 +94,9 @@ public class CameraRender implements GLSurfaceView.Renderer {
         mCameraProgram.bindTexture(mTextureId);
         mVertexArray.setVertexAttribPointer(0, mCameraProgram.aPositionLocation, 2, (2 + 2) * Constants.BYTES_PER_FLOAT);
         mVertexArray.setVertexAttribPointer(2, mCameraProgram.aTextureCoordinatesLocation, 2, (2 + 2) * Constants.BYTES_PER_FLOAT);
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, drawOrder.length, GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
-        GLES20.glDisableVertexAttribArray(mCameraProgram.aPositionLocation);
-        GLES20.glDisableVertexAttribArray(mCameraProgram.aTextureCoordinatesLocation);
+        glDrawElements(GL_TRIANGLES, drawOrder.length, GL_UNSIGNED_SHORT, drawListBuffer);
+        glDisableVertexAttribArray(mCameraProgram.aPositionLocation);
+        glDisableVertexAttribArray(mCameraProgram.aTextureCoordinatesLocation);
     }
 
     public void notifyPausing() {
