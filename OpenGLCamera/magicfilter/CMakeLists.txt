@@ -10,11 +10,13 @@ cmake_minimum_required(VERSION 3.4.1)
 # You can define multiple libraries, and CMake builds them for you.
 # Gradle automatically packages shared libraries with your APK.
 
-set(MAGIC_BUAUTIFY_DIR src/main/jni//beautify/MagicBeautify.cpp
-                       src/main/jni//bitmap/BitmapOperation.cpp
-                       src/main/jni//bitmap/Conversion.cpp
-                       src/main/jni/MagicJni.cpp )
-
+#set(MAGIC_BUAUTIFY_DIR src/main/jni//beautify/MagicBeautify.cpp
+#                       src/main/jni//bitmap/BitmapOperation.cpp
+#                       src/main/jni//bitmap/Conversion.cpp
+#                       src/main/jni/MagicJni.cpp )
+file(GLOB MAGIC_BUAUTIFY_DIR src/main/jni//beautify/*.cpp
+                             src/main/jni//bitmap/*.cpp
+                             src/main/jni/*.cpp)
 add_library( # Sets the name of the library.
              MagicBeautify
 
