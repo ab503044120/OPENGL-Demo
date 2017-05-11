@@ -4,6 +4,8 @@ import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 
+import com.seu.magicfilter.camera.CameraEngine;
+
 /**
  * Created by Administrator on 2017/5/6.
  */
@@ -28,7 +30,8 @@ public class CameraGLSurfaceView extends GLSurfaceView {
     }
 
     protected void onDestroy() {
-        CameraHelper.getInstance().realse();
+//        CameraHelper.getInstance().realse();
+        CameraEngine.releaseCamera();
     }
 
     public void onResume() {
@@ -36,7 +39,8 @@ public class CameraGLSurfaceView extends GLSurfaceView {
     }
 
     public void onPause() {
-        CameraHelper.getInstance().realse();
+        CameraEngine.releaseCamera();
+//        CameraHelper.getInstance().realse();
         queueEvent(new Runnable() {
             @Override public void run() {
                 // 跨进程 清空 Renderer数据
