@@ -74,7 +74,7 @@ public class CameraRender implements GLSurfaceView.Renderer {
     private short drawOrder[] = {0, 1, 2, 0, 2, 3}; // order to draw vertices
     private int imageWidth;
     private int imageHeight;
-    private MagicBaseView.ScaleType scaleType;
+    private MagicBaseView.ScaleType scaleType =  MagicBaseView.ScaleType.CENTER_CROP;
 
     public CameraRender(Context context, GLSurfaceView GLSurfaceView) {
         mContext = context;
