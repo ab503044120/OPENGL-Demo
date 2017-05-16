@@ -9,6 +9,7 @@ import android.util.Log;
 import com.seu.magicfilter.camera.CameraEngine;
 import com.seu.magicfilter.camera.utils.CameraInfo;
 import com.seu.magicfilter.filter.base.MagicCameraInputFilter;
+import com.seu.magicfilter.filter.base.gpuimage.GPUImageFilter;
 import com.seu.magicfilter.utils.Rotation;
 import com.seu.magicfilter.utils.TextureRotationUtil;
 import com.seu.magicfilter.widget.base.MagicBaseView;
@@ -36,25 +37,7 @@ public class CameraRender implements GLSurfaceView.Renderer {
     private Context mContext;
     private int mTextureId;
     private SurfaceTexture mSurfaceTexture;
-    private VertexArray mVertexArray;
-    private ShortBuffer drawListBuffer;
-    private CameraProgram mCameraProgram;
     private MagicCameraInputFilter cameraInputFilter;
-//    private float[] mVext = {
-//            -1.0f, 1.0f, 0.0f, 1.0f,
-//            -1.0f, -1.0f, 1.0f, 1.0f,
-//            1.0f, -1.0f, 1.0f, 0.0f,
-//            1.0f, 1.0f, 0.0f, 0.0f,
-//
-//    };
-    private float[] mVext = {
-            -1.0f, 1.0f, -1.0f, 1.0f,
-            -1.0f, -1.0f, -1.0f, -1.0f,
-            1.0f, -1.0f, 1.0f, -1.0f,
-            1.0f, 1.0f,  1.0f, 1.0f,
-
-    };
-
     /**
      * 顶点坐标
      */
@@ -71,10 +54,10 @@ public class CameraRender implements GLSurfaceView.Renderer {
      */
     protected int surfaceWidth, surfaceHeight;
 
-    private short drawOrder[] = {0, 1, 2, 0, 2, 3}; // order to draw vertices
     private int imageWidth;
     private int imageHeight;
-    private MagicBaseView.ScaleType scaleType =  MagicBaseView.ScaleType.CENTER_CROP;
+    private MagicBaseView.ScaleType scaleType = MagicBaseView.ScaleType.CENTER_CROP;
+    private GPUImageFilter mGPUImageFilter;
 
     public CameraRender(Context context, GLSurfaceView GLSurfaceView) {
         mContext = context;
@@ -100,16 +83,10 @@ public class CameraRender implements GLSurfaceView.Renderer {
             cameraInputFilter = new MagicCameraInputFilter();
         }
         cameraInputFilter.init();
+        mGPUImageFilter = new GPUImageFilter();
+        mGPUImageFilter.init();
         mTextureId = TextureHelper.genTexture();
         mSurfaceTexture = new SurfaceTexture(mTextureId);
-        mVertexArray = new VertexArray(mVext);
-        ByteBuffer dlb = ByteBuffer.allocateDirect(drawOrder.length * 2);
-        dlb.order(ByteOrder.nativeOrder());
-        drawListBuffer = dlb.asShortBuffer();
-        drawListBuffer.put(drawOrder);
-        drawListBuffer.position(0);
-//        CameraHelper.getInstance().open();
-        mCameraProgram = new CameraProgram(mContext);
         mSurfaceTexture.setOnFrameAvailableListener(new SurfaceTexture.OnFrameAvailableListener() {
             @Override
             public void onFrameAvailable(SurfaceTexture surfaceTexture) {
@@ -124,8 +101,7 @@ public class CameraRender implements GLSurfaceView.Renderer {
         surfaceWidth = width;
         surfaceHeight = height;
         openCamera();
-        cameraInputFilter.initCameraFrameBuffer(width, height);
-        cameraInputFilter.onInputSizeChanged(height, width);
+        cameraInputFilter.initCameraFrameBuffer(imageWidth,imageHeight);
     }
 
     @Override
@@ -141,13 +117,7 @@ public class CameraRender implements GLSurfaceView.Renderer {
         cameraInputFilter.setTextureTransformMatrix(mtx);
         if (cameraInputFilter != null) {
             int drawToTexture = cameraInputFilter.onDrawToTexture(mTextureId);
-            mCameraProgram.useProgram();
-            mCameraProgram.bindTexture(drawToTexture);
-            mVertexArray.setVertexAttribPointer(0, mCameraProgram.aPositionLocation, 2, (2 + 2) * Constants.BYTES_PER_FLOAT);
-            mVertexArray.setVertexAttribPointer(2, mCameraProgram.aTextureCoordinatesLocation, 2, (2 + 2) * Constants.BYTES_PER_FLOAT);
-            GLES20.glDrawElements(GLES20.GL_TRIANGLES, drawOrder.length, GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
-            GLES20.glDisableVertexAttribArray(mCameraProgram.aPositionLocation);
-            GLES20.glDisableVertexAttribArray(mCameraProgram.aTextureCoordinatesLocation);
+            mGPUImageFilter.onDrawFrame(drawToTexture, gLCubeBuffer, gLTextureBuffer);
         }
     }
 
