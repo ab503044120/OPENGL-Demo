@@ -40,11 +40,18 @@ public class CameraRender implements GLSurfaceView.Renderer {
     private ShortBuffer drawListBuffer;
     private CameraProgram mCameraProgram;
     private MagicCameraInputFilter cameraInputFilter;
+//    private float[] mVext = {
+//            -1.0f, 1.0f, 0.0f, 1.0f,
+//            -1.0f, -1.0f, 1.0f, 1.0f,
+//            1.0f, -1.0f, 1.0f, 0.0f,
+//            1.0f, 1.0f, 0.0f, 0.0f,
+//
+//    };
     private float[] mVext = {
-            -1.0f, 1.0f, 0.0f, 1.0f,
-            -1.0f, -1.0f, 1.0f, 1.0f,
-            1.0f, -1.0f, 1.0f, 0.0f,
-            1.0f, 1.0f, 0.0f, 0.0f,
+            -1.0f, 1.0f, -1.0f, 1.0f,
+            -1.0f, -1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, 1.0f, -1.0f,
+            1.0f, 1.0f,  1.0f, 1.0f,
 
     };
 
@@ -95,14 +102,14 @@ public class CameraRender implements GLSurfaceView.Renderer {
         cameraInputFilter.init();
         mTextureId = TextureHelper.genTexture();
         mSurfaceTexture = new SurfaceTexture(mTextureId);
-//        mVertexArray = new VertexArray(mVext);
-//        ByteBuffer dlb = ByteBuffer.allocateDirect(drawOrder.length * 2);
-//        dlb.order(ByteOrder.nativeOrder());
-//        drawListBuffer = dlb.asShortBuffer();
-//        drawListBuffer.put(drawOrder);
-//        drawListBuffer.position(0);
+        mVertexArray = new VertexArray(mVext);
+        ByteBuffer dlb = ByteBuffer.allocateDirect(drawOrder.length * 2);
+        dlb.order(ByteOrder.nativeOrder());
+        drawListBuffer = dlb.asShortBuffer();
+        drawListBuffer.put(drawOrder);
+        drawListBuffer.position(0);
 //        CameraHelper.getInstance().open();
-//        mCameraProgram = new CameraProgram(mContext);
+        mCameraProgram = new CameraProgram(mContext);
         mSurfaceTexture.setOnFrameAvailableListener(new SurfaceTexture.OnFrameAvailableListener() {
             @Override
             public void onFrameAvailable(SurfaceTexture surfaceTexture) {
@@ -133,7 +140,14 @@ public class CameraRender implements GLSurfaceView.Renderer {
         mSurfaceTexture.getTransformMatrix(mtx);
         cameraInputFilter.setTextureTransformMatrix(mtx);
         if (cameraInputFilter != null) {
-            cameraInputFilter.onDrawFrame(mTextureId, gLCubeBuffer, gLTextureBuffer);
+            int drawToTexture = cameraInputFilter.onDrawToTexture(mTextureId);
+            mCameraProgram.useProgram();
+            mCameraProgram.bindTexture(drawToTexture);
+            mVertexArray.setVertexAttribPointer(0, mCameraProgram.aPositionLocation, 2, (2 + 2) * Constants.BYTES_PER_FLOAT);
+            mVertexArray.setVertexAttribPointer(2, mCameraProgram.aTextureCoordinatesLocation, 2, (2 + 2) * Constants.BYTES_PER_FLOAT);
+            GLES20.glDrawElements(GLES20.GL_TRIANGLES, drawOrder.length, GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
+            GLES20.glDisableVertexAttribArray(mCameraProgram.aPositionLocation);
+            GLES20.glDisableVertexAttribArray(mCameraProgram.aTextureCoordinatesLocation);
         }
     }
 
@@ -199,6 +213,7 @@ public class CameraRender implements GLSurfaceView.Renderer {
         gLTextureBuffer.clear();
         gLTextureBuffer.put(textureCords).position(0);
     }
+
     private float addDistance(float coordinate, float distance) {
         return coordinate == 0.0f ? distance : 1 - distance;
     }
