@@ -65,10 +65,11 @@ public class WaterGPUImageFilter extends GPUImageFilter {
             bottomY = -temp;
         }
         final float watermarkCoords[] = {
+                leftX, topY, 0.0f,
+                rightX, topY, 0.0f,
                 leftX, bottomY, 0.0f,
                 rightX, bottomY, 0.0f,
-                leftX, topY, 0.0f,
-                rightX, topY, 0.0f
+
         };
         ByteBuffer bb = ByteBuffer.allocateDirect(watermarkCoords.length * 4);
         bb.order(ByteOrder.nativeOrder());
