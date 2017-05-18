@@ -5,8 +5,9 @@
  * courses, books, articles, and the like. Contact us if you are in doubt.
  * We make no guarantees that this code is fit for any purpose. 
  * Visit http://www.pragmaticprogrammer.com/titles/kbogla for more book information.
-***/
+ ***/
 package com.airhockey.android.objects;
+
 import com.airhockey.android.data.VertexArray;
 import com.airhockey.android.programs.TextureShaderProgram;
 
@@ -17,27 +18,27 @@ import static com.airhockey.android.Constants.BYTES_PER_FLOAT;
 public class Table {
     private static final int POSITION_COMPONENT_COUNT = 2;
     private static final int TEXTURE_COORDINATES_COMPONENT_COUNT = 2;
-    private static final int STRIDE = (POSITION_COMPONENT_COUNT 
-        + TEXTURE_COORDINATES_COMPONENT_COUNT) * BYTES_PER_FLOAT;
+    private static final int STRIDE = (POSITION_COMPONENT_COUNT
+            + TEXTURE_COORDINATES_COMPONENT_COUNT) * BYTES_PER_FLOAT;
     //沿着x轴翻转180
-          private static final float[] VERTEX_DATA = {
+//          private static final float[] VERTEX_DATA = {
+//            // Order of coordinates: X, Y, S, T
+//
+//            // Triangle Fan
+//            -0.5f, 0.8f,   0f, 0.9f,
+//            -0.5f, -0.8f,   0f, 0.1f,
+//            0.5f,  0.8f,   1f, 0.9f,
+//            0.5f,  -0.8f,   1f, 0.1f
+//    };
+    private static final float[] VERTEX_DATA = {
             // Order of coordinates: X, Y, S, T
 
             // Triangle Fan
-            -0.5f, 0.8f,   0f, 0.9f,
-            -0.5f, -0.8f,   0f, 0.1f,
-            0.5f,  0.8f,   1f, 0.9f,
-            0.5f,  -0.8f,   1f, 0.1f
+            -0.5f, -0.8f, 0f, 0.9f,
+            0.5f, -0.8f, 1f, 0.9f,
+            -0.5f, 0.8f, 0f, 0.1f,
+            0.5f, 0.8f, 1f, 0.1f
     };
-//    private static final float[] VERTEX_DATA = {
-//        // Order of coordinates: X, Y, S, T
-//
-//        // Triangle Fan
-//        -0.5f, -0.8f,   0f, 0.9f,
-//         0.5f, -0.8f,   1f, 0.9f,
-//        -0.5f,  0.8f,   0f, 0.1f,
-//         0.5f,  0.8f,   1f, 0.1f
-//         };
 //    private static final float[] VERTEX_DATA = {
 //        // Order of coordinates: X, Y, S, T
 //
@@ -48,28 +49,28 @@ public class Table {
 //         0.5f,  0.8f,   1f, 0.1f,
 //        -0.5f,  0.8f,   0f, 0.1f,
 //        -0.5f, -0.8f,   0f, 0.9f };
-    
+
     private final VertexArray vertexArray;
-    
+
     public Table() {
         vertexArray = new VertexArray(VERTEX_DATA);
     }
-    
+
     public void bindData(TextureShaderProgram textureProgram) {
         vertexArray.setVertexAttribPointer(
-            0, 
-            textureProgram.getPositionAttributeLocation(), 
-            POSITION_COMPONENT_COUNT,
-            STRIDE);
-        
+                0,
+                textureProgram.getPositionAttributeLocation(),
+                POSITION_COMPONENT_COUNT,
+                STRIDE);
+
         vertexArray.setVertexAttribPointer(
-            POSITION_COMPONENT_COUNT, 
-            textureProgram.getTextureCoordinatesAttributeLocation(),
-            TEXTURE_COORDINATES_COMPONENT_COUNT, 
-            STRIDE);
+                POSITION_COMPONENT_COUNT,
+                textureProgram.getTextureCoordinatesAttributeLocation(),
+                TEXTURE_COORDINATES_COMPONENT_COUNT,
+                STRIDE);
     }
-    
-    public void draw() {                                
+
+    public void draw() {
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
 }

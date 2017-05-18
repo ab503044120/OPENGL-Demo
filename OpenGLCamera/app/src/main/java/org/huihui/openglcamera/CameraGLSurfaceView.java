@@ -3,6 +3,7 @@ package org.huihui.openglcamera;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
+import android.view.SurfaceHolder;
 
 import com.seu.magicfilter.camera.CameraEngine;
 
@@ -29,6 +30,12 @@ public class CameraGLSurfaceView extends GLSurfaceView {
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }
 
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        super.surfaceDestroyed(holder);
+        CameraEngine.releaseCamera();
+    }
+
     protected void onDestroy() {
 //        CameraHelper.getInstance().realse();
         CameraEngine.releaseCamera();
@@ -40,13 +47,13 @@ public class CameraGLSurfaceView extends GLSurfaceView {
 
     public void onPause() {
         CameraEngine.releaseCamera();
-//        CameraHelper.getInstance().realse();
-        queueEvent(new Runnable() {
-            @Override public void run() {
-                // 跨进程 清空 Renderer数据
-                mRenderer.notifyPausing();
-            }
-        });
+////        CameraHelper.getInstance().realse();
+//        queueEvent(new Runnable() {
+//            @Override public void run() {
+//                // 跨进程 清空 Renderer数据
+//                mRenderer.notifyPausing();
+//            }
+//        });
         super.onPause();
     }
 

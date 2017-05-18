@@ -104,10 +104,11 @@ public class CameraRender implements GLSurfaceView.Renderer {
         surfaceWidth = width;
         surfaceHeight = height;
         openCamera();
+        cameraInputFilter.destroyFramebuffers();
         cameraInputFilter.initCameraFrameBuffer(imageWidth, imageHeight);
         Bitmap bitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.watermark);
         mGPUImageFilter.onDisplaySizeChanged(width,height);
-        mGPUImageFilter.setWatermark(new Watermark(bitmap, bitmap.getWidth(), bitmap.getHeight(), WatermarkPosition.WATERMARK_ORIENTATION_TOP_LEFT, 100, 100));
+        cameraInputFilter.setWatermark(new Watermark(bitmap, bitmap.getWidth(), bitmap.getHeight(), WatermarkPosition.WATERMARK_ORIENTATION_TOP_LEFT, 100, 100));
 
     }
 
@@ -126,17 +127,10 @@ public class CameraRender implements GLSurfaceView.Renderer {
             int drawToTexture = cameraInputFilter.onDrawToTexture(mTextureId);
             glViewport(0, 0, surfaceWidth, surfaceHeight);
             mGPUImageFilter.onDrawFrame(drawToTexture, gLCubeBuffer, gLTextureBuffer);
-            mGPUImageFilter.drawWatermark();
+//            mGPUImageFilter.drawWatermark();
         }
     }
 
-    public void notifyPausing() {
-        if (mSurfaceTexture != null) {
-            mSurfaceTexture.release();
-            mSurfaceTexture = null;
-        }
-
-    }
 
     private void openCamera() {
         if (CameraEngine.getCamera() == null)
@@ -150,7 +144,7 @@ public class CameraRender implements GLSurfaceView.Renderer {
             imageHeight = info.previewHeight;
         }
         cameraInputFilter.onInputSizeChanged(imageWidth, imageHeight);
-        adjustSize(info.orientation, info.isFront, true);
+        adjustSize(info.orientation, info.isFront, false);
         if (mSurfaceTexture != null)
             CameraEngine.startPreview(mSurfaceTexture);
     }
