@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.seu.magicfilter.camera.CameraEngine;
 import com.seu.magicfilter.camera.utils.CameraInfo;
+import com.seu.magicfilter.filter.base.MagicCameraInputFilter;
 import com.seu.magicfilter.utils.Rotation;
 import com.seu.magicfilter.utils.TextureRotationUtil;
 import com.seu.magicfilter.water.WaterGPUImageFilter;
@@ -61,6 +62,7 @@ public class CameraRender implements GLSurfaceView.Renderer {
     private int imageHeight;
     private MagicBaseView.ScaleType scaleType = MagicBaseView.ScaleType.CENTER_CROP;
     private WaterGPUImageFilter mGPUImageFilter;
+    private MagicCameraInputFilter mMagicCameraInputFilter;
 
     public CameraRender(Context context, GLSurfaceView GLSurfaceView) {
         mContext = context;
@@ -82,10 +84,12 @@ public class CameraRender implements GLSurfaceView.Renderer {
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        if (cameraInputFilter == null) {
-            cameraInputFilter = new WaterMagicCameraInputFilter();
-        }
+        cameraInputFilter = new WaterMagicCameraInputFilter();
+        mMagicCameraInputFilter = new MagicCameraInputFilter();
+
         cameraInputFilter.init();
+        mMagicCameraInputFilter.init();
+
         mGPUImageFilter = new WaterGPUImageFilter();
         mGPUImageFilter.init();
         mTextureId = TextureHelper.genTexture();
@@ -106,8 +110,11 @@ public class CameraRender implements GLSurfaceView.Renderer {
         openCamera();
         cameraInputFilter.destroyFramebuffers();
         cameraInputFilter.initCameraFrameBuffer(imageWidth, imageHeight);
+
+        mMagicCameraInputFilter.destroyFramebuffers();
+        mMagicCameraInputFilter.initCameraFrameBuffer(imageWidth, imageHeight);
         Bitmap bitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.watermark);
-        mGPUImageFilter.onDisplaySizeChanged(width,height);
+        mGPUImageFilter.onDisplaySizeChanged(width, height);
         cameraInputFilter.setWatermark(new Watermark(bitmap, bitmap.getWidth(), bitmap.getHeight(), WatermarkPosition.WATERMARK_ORIENTATION_TOP_LEFT, 100, 100));
 
     }
@@ -123,11 +130,13 @@ public class CameraRender implements GLSurfaceView.Renderer {
         float[] mtx = new float[16];
         mSurfaceTexture.getTransformMatrix(mtx);
         cameraInputFilter.setTextureTransformMatrix(mtx);
+        mMagicCameraInputFilter.setTextureTransformMatrix(mtx);
         if (cameraInputFilter != null) {
-            int drawToTexture = cameraInputFilter.onDrawToTexture(mTextureId);
+            int fbo1 = mMagicCameraInputFilter.onDrawToTexture(mTextureId);
+            int drawToTexture = cameraInputFilter.onDrawToTexture(fbo1);
             glViewport(0, 0, surfaceWidth, surfaceHeight);
             mGPUImageFilter.onDrawFrame(drawToTexture, gLCubeBuffer, gLTextureBuffer);
-//            mGPUImageFilter.drawWatermark();
+//            cameraInputFilter.drawWatermark();
         }
     }
 

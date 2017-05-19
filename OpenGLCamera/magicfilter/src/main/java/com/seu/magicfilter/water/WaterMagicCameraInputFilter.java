@@ -71,11 +71,10 @@ public class WaterMagicCameraInputFilter extends MagicCameraInputFilter {
             bottomY = -temp;
         }
         final float watermarkCoords[] = {
-                leftX, topY, 0.0f,
-                rightX, topY, 0.0f,
                 leftX, bottomY, 0.0f,
                 rightX, bottomY, 0.0f,
-
+                leftX, topY, 0.0f,
+                rightX, topY, 0.0f,
         };
         ByteBuffer bb = ByteBuffer.allocateDirect(watermarkCoords.length * 4);
         bb.order(ByteOrder.nativeOrder());
@@ -137,8 +136,8 @@ public class WaterMagicCameraInputFilter extends MagicCameraInputFilter {
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
-        GLES20.glDisableVertexAttribArray(mGLAttribPosition);
-        GLES20.glDisableVertexAttribArray(mGLAttribTextureCoordinate);
+        GLES20.glDisableVertexAttribArray(maPositionHandle);
+        GLES20.glDisableVertexAttribArray(maTexCoordHandle);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         GLES20.glDisable(GLES20.GL_BLEND);
     }
@@ -172,6 +171,7 @@ public class WaterMagicCameraInputFilter extends MagicCameraInputFilter {
         GLES20.glDisableVertexAttribArray(mGLAttribPosition);
         GLES20.glDisableVertexAttribArray(mGLAttribTextureCoordinate);
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, 0);
+        //这里画水印老是不行求解
         drawWatermark();
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
         //去除这里不合理
@@ -181,27 +181,10 @@ public class WaterMagicCameraInputFilter extends MagicCameraInputFilter {
 
     private void initGL() {
         if (mProgram == 0) {
-            final String vertexShader =
-                    //
-                    "attribute vec4 position;\n" +
-                            "attribute vec4 inputTextureCoordinate;\n" +
-                            "varying   vec2 textureCoordinate;\n" +
-                            "void main() {\n" +
-                            "  gl_Position =  position;\n" +
-                            "  textureCoordinate   = inputTextureCoordinate.xy;\n" +
-                            "}\n";
-            final String fragmentShader =
-                    //
-                    "precision mediump float;\n" +
-                            "uniform sampler2D uSampler;\n" +
-                            "varying vec2 textureCoordinate;\n" +
-                            "void main() {\n" +
-                            "  gl_FragColor = texture2D(uSampler, textureCoordinate);\n" +
-                            "}\n";
-            mProgram = GlUtil.createProgram(vertexShader, fragmentShader);
+            mProgram = GlUtil.createProgram(NO_FILTER_VERTEX_SHADER, NO_FILTER_FRAGMENT_SHADER);
             maPositionHandle = GLES20.glGetAttribLocation(mProgram, "position");
             maTexCoordHandle = GLES20.glGetAttribLocation(mProgram, "inputTextureCoordinate");
-            muSamplerHandle = GLES20.glGetUniformLocation(mProgram, "uSampler");
+            muSamplerHandle = GLES20.glGetUniformLocation(mProgram, "inputImageTexture");
         }
 
     }
