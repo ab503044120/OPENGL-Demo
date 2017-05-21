@@ -42,6 +42,7 @@ public class CameraRender implements GLSurfaceView.Renderer {
     private int mTextureId;
     private SurfaceTexture mSurfaceTexture;
     private WaterMagicCameraInputFilter cameraInputFilter;
+    private WaterMagicCameraInputFilter cameraInputFilter1;
     /**
      * 顶点坐标
      */
@@ -85,9 +86,11 @@ public class CameraRender implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         cameraInputFilter = new WaterMagicCameraInputFilter();
+        cameraInputFilter1 = new WaterMagicCameraInputFilter();
         mMagicCameraInputFilter = new MagicCameraInputFilter();
 
         cameraInputFilter.init();
+        cameraInputFilter1.init();
         mMagicCameraInputFilter.init();
 
         mGPUImageFilter = new WaterGPUImageFilter();
@@ -110,6 +113,8 @@ public class CameraRender implements GLSurfaceView.Renderer {
         openCamera();
         cameraInputFilter.destroyFramebuffers();
         cameraInputFilter.initCameraFrameBuffer(imageWidth, imageHeight);
+        cameraInputFilter1.destroyFramebuffers();
+        cameraInputFilter1.initCameraFrameBuffer(imageWidth, imageHeight);
 
         mMagicCameraInputFilter.destroyFramebuffers();
         mMagicCameraInputFilter.initCameraFrameBuffer(imageWidth, imageHeight);
@@ -129,11 +134,12 @@ public class CameraRender implements GLSurfaceView.Renderer {
         mSurfaceTexture.updateTexImage();
         float[] mtx = new float[16];
         mSurfaceTexture.getTransformMatrix(mtx);
-        cameraInputFilter.setTextureTransformMatrix(mtx);
+//        cameraInputFilter.setTextureTransformMatrix(mtx);
         mMagicCameraInputFilter.setTextureTransformMatrix(mtx);
         if (cameraInputFilter != null) {
             int fbo1 = mMagicCameraInputFilter.onDrawToTexture(mTextureId);
-            int drawToTexture = cameraInputFilter.onDrawToTexture(fbo1);
+            int fbo2 = cameraInputFilter.onDrawToTexture(fbo1);
+            int drawToTexture = cameraInputFilter1.onDrawToTexture(fbo2);
             glViewport(0, 0, surfaceWidth, surfaceHeight);
             mGPUImageFilter.onDrawFrame(drawToTexture, gLCubeBuffer, gLTextureBuffer);
 //            cameraInputFilter.drawWatermark();

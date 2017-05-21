@@ -6,6 +6,6 @@ varying vec2 textureCoordinate;
 
 void main()
 {
-	textureCoordinate = (textureTransform * inputTextureCoordinate).xy;
+	textureCoordinate = (inputTextureCoordinate).xy;
 	gl_Position = position;
 }
