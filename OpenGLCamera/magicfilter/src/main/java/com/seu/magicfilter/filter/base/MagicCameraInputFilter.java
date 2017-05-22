@@ -7,6 +7,7 @@ import com.seu.magicfilter.R;
 import com.seu.magicfilter.filter.base.gpuimage.GPUImageFilter;
 import com.seu.magicfilter.utils.MagicParams;
 import com.seu.magicfilter.utils.OpenGlUtils;
+import com.seu.magicfilter.water.GlUtil;
 
 import java.nio.FloatBuffer;
 
@@ -36,7 +37,7 @@ public class MagicCameraInputFilter extends GPUImageFilter {
     }
 
     public void setTextureTransformMatrix(float[] mtx) {
-        mTextureTransformMatrix = mtx;
+        mTextureTransformMatrix = GlUtil.createIdentityMtx();
     }
 
     @Override
