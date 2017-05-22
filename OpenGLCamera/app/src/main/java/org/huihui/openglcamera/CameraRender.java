@@ -119,8 +119,10 @@ public class CameraRender implements GLSurfaceView.Renderer {
         mMagicCameraInputFilter.destroyFramebuffers();
         mMagicCameraInputFilter.initCameraFrameBuffer(imageWidth, imageHeight);
         Bitmap bitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.watermark);
+        Bitmap bitmap1 = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.watermark);
         mGPUImageFilter.onDisplaySizeChanged(width, height);
         cameraInputFilter.setWatermark(new Watermark(bitmap, bitmap.getWidth(), bitmap.getHeight(), WatermarkPosition.WATERMARK_ORIENTATION_TOP_LEFT, 100, 100));
+        cameraInputFilter1.setWatermark(new Watermark(bitmap1, bitmap1.getWidth(), bitmap1.getHeight(), WatermarkPosition.WATERMARK_ORIENTATION_TOP_LEFT, 100, 100));
 
     }
 
