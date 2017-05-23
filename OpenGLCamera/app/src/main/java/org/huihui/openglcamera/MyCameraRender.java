@@ -10,16 +10,15 @@ import android.util.Log;
 
 import com.seu.magicfilter.camera.CameraEngine;
 import com.seu.magicfilter.camera.utils.CameraInfo;
-import com.seu.magicfilter.filter.base.MagicCameraInputFilter;
 import com.seu.magicfilter.utils.Rotation;
 import com.seu.magicfilter.utils.TextureRotationUtil;
 import com.seu.magicfilter.water.WaterGPUImageFilter;
-import com.seu.magicfilter.water.WaterMagicCameraInputFilter;
 import com.seu.magicfilter.water.Watermark;
 import com.seu.magicfilter.water.WatermarkPosition;
 import com.seu.magicfilter.widget.base.MagicBaseView;
 
 import org.huihui.openglcamera.filter.CameraInputFilter;
+import org.huihui.openglcamera.filter.WaterFilter;
 import org.huihui.openglcamera.utils.TextureHelper;
 
 import java.nio.ByteBuffer;
@@ -29,21 +28,19 @@ import java.nio.FloatBuffer;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import static android.opengl.GLES20.*;
+import static android.opengl.GLES20.glViewport;
 
 /**
  * Created by Administrator on 2017/5/6.
  */
 
-public class CameraRender implements GLSurfaceView.Renderer {
+public class MyCameraRender implements GLSurfaceView.Renderer {
 
     private final GLSurfaceView mGLSurfaceView;
     private String TAG = "CameraRender";
     private Context mContext;
     private int mTextureId;
     private SurfaceTexture mSurfaceTexture;
-    private WaterMagicCameraInputFilter cameraInputFilter;
-    private WaterMagicCameraInputFilter cameraInputFilter1;
     /**
      * 顶点坐标
      */
@@ -64,10 +61,10 @@ public class CameraRender implements GLSurfaceView.Renderer {
     private int imageHeight;
     private MagicBaseView.ScaleType scaleType = MagicBaseView.ScaleType.CENTER_CROP;
     private WaterGPUImageFilter mGPUImageFilter;
-    private MagicCameraInputFilter mMagicCameraInputFilter;
     private CameraInputFilter mCameraInputFilter;
+    private WaterFilter mWaterFilter;
 
-    public CameraRender(Context context, GLSurfaceView GLSurfaceView) {
+    public MyCameraRender(Context context, GLSurfaceView GLSurfaceView) {
         mContext = context;
         mGLSurfaceView = GLSurfaceView;
         gLCubeBuffer = ByteBuffer.allocateDirect(TextureRotationUtil.CUBE.length * 4)
@@ -88,13 +85,7 @@ public class CameraRender implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         mCameraInputFilter = new CameraInputFilter(mContext);
-        cameraInputFilter = new WaterMagicCameraInputFilter();
-        cameraInputFilter1 = new WaterMagicCameraInputFilter();
-        mMagicCameraInputFilter = new MagicCameraInputFilter();
-        mCameraInputFilter.init();
-        cameraInputFilter.init();
-        cameraInputFilter1.init();
-        mMagicCameraInputFilter.init();
+        mWaterFilter = new WaterFilter(mContext);
 
         mGPUImageFilter = new WaterGPUImageFilter();
         mGPUImageFilter.init();
@@ -118,20 +109,17 @@ public class CameraRender implements GLSurfaceView.Renderer {
         mCameraInputFilter.setInputSize(imageWidth, imageHeight);
         mCameraInputFilter.initBuffer();
 
-        cameraInputFilter.destroyFramebuffers();
-        cameraInputFilter.initCameraFrameBuffer(imageWidth, imageHeight);
-        cameraInputFilter1.destroyFramebuffers();
-        cameraInputFilter1.initCameraFrameBuffer(imageWidth, imageHeight);
+        mWaterFilter.destroyBuffer();
+        mWaterFilter.setInputSize(imageWidth, imageHeight);
+        mWaterFilter.initBuffer();
 
-        mMagicCameraInputFilter.destroyFramebuffers();
-        mMagicCameraInputFilter.initCameraFrameBuffer(imageWidth, imageHeight);
         Bitmap bitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.watermark);
         Bitmap bitmap1 = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.watermark);
         Bitmap bitmap2 = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.watermark);
         mGPUImageFilter.onDisplaySizeChanged(width, height);
-        cameraInputFilter.setWatermark(new Watermark(bitmap, bitmap.getWidth(), bitmap.getHeight(), WatermarkPosition.WATERMARK_ORIENTATION_TOP_LEFT, 100, 100));
-        cameraInputFilter1.setWatermark(new Watermark(bitmap1, bitmap1.getWidth(), bitmap1.getHeight(), WatermarkPosition.WATERMARK_ORIENTATION_TOP_LEFT, 100, 100));
         mGPUImageFilter.setWatermark(new Watermark(bitmap2, bitmap2.getWidth(), bitmap2.getHeight(), WatermarkPosition.WATERMARK_ORIENTATION_TOP_LEFT, 100, 100));
+        mWaterFilter.setWatermark(new Watermark(bitmap1, bitmap1.getWidth(), bitmap1.getHeight(), WatermarkPosition.WATERMARK_ORIENTATION_TOP_LEFT, 100, 100));
+
 
     }
 
@@ -146,15 +134,11 @@ public class CameraRender implements GLSurfaceView.Renderer {
         float[] mtx = new float[16];
         mSurfaceTexture.getTransformMatrix(mtx);
 //        cameraInputFilter.setTextureTransformMatrix(mtx);
-        mMagicCameraInputFilter.setTextureTransformMatrix(mtx);
-        if (cameraInputFilter != null) {
-            int fbo1 = mCameraInputFilter.drawToTexture(mTextureId);
-            int fbo2 = cameraInputFilter.onDrawToTexture(fbo1);
-            int drawToTexture = cameraInputFilter1.onDrawToTexture(fbo2);
-            glViewport(0, 0, surfaceWidth, surfaceHeight);
-            mGPUImageFilter.onDrawFrame(drawToTexture, gLCubeBuffer, gLTextureBuffer);
+        int fbo1 = mCameraInputFilter.drawToTexture(mTextureId);
+        int fbo2 = mWaterFilter.drawToTexture(fbo1);
+        glViewport(0, 0, surfaceWidth, surfaceHeight);
+        mGPUImageFilter.onDrawFrame(fbo2, gLCubeBuffer, gLTextureBuffer);
 //            cameraInputFilter1.drawWatermark();
-        }
     }
 
 
@@ -169,7 +153,6 @@ public class CameraRender implements GLSurfaceView.Renderer {
             imageWidth = info.previewWidth;
             imageHeight = info.previewHeight;
         }
-        cameraInputFilter.onInputSizeChanged(imageWidth, imageHeight);
         adjustSize(info.orientation, info.isFront, false);
         if (mSurfaceTexture != null)
             CameraEngine.startPreview(mSurfaceTexture);

@@ -12,7 +12,7 @@ import com.seu.magicfilter.camera.CameraEngine;
  */
 
 public class CameraGLSurfaceView extends GLSurfaceView {
-    private CameraRender mRenderer;
+    private MyCameraRender mRenderer;
 
     public CameraGLSurfaceView(Context context) {
         this(context, null);
@@ -25,7 +25,7 @@ public class CameraGLSurfaceView extends GLSurfaceView {
 
     private void init() {
         setEGLContextClientVersion(2);
-        mRenderer = new CameraRender(getContext(),this);
+        mRenderer = new MyCameraRender(getContext(), this);
         setRenderer(mRenderer);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }

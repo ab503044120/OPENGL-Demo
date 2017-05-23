@@ -3,11 +3,6 @@ package org.huihui.openglcamera.filter;
 import android.content.Context;
 import android.opengl.GLES20;
 
-import com.seu.magicfilter.utils.OpenGlUtils;
-import com.seu.magicfilter.utils.Rotation;
-import com.seu.magicfilter.utils.TextureRotationUtil;
-
-import org.huihui.openglcamera.R;
 import org.huihui.openglcamera.utils.MatrixUtils;
 import org.huihui.openglcamera.utils.ShaderHelper;
 import org.huihui.openglcamera.utils.TextResourceReader;
@@ -31,11 +26,12 @@ public class Filter implements IFilter {
     protected int uTextureUnitLocation;
     protected int aPositionLocation;
     protected int aTextureCoordinatesLocation;
-    protected int uvCoordMatrixLocation;
+    protected int uTexMtxLocation;
     protected int mWidth = -1;
     protected int mHeight = -1;
-    protected float[] mPositionMatrix = MatrixUtils.IdentityM(16);
-    protected float[] mTextureMatrix = MatrixUtils.flip(MatrixUtils.IdentityM(16), false, true);
+    //这里必须有一个沿着y轴翻转
+    protected float[] mPositionMatrix = MatrixUtils.flip(MatrixUtils.IdentityM(16), false, true);
+    protected float[] mTextureMatrix = MatrixUtils.IdentityM(16);//
     protected int[] mFrameBuffers;
     protected int[] mFrameBufferTextures;
     protected float[] positionVertex = {
@@ -50,12 +46,12 @@ public class Filter implements IFilter {
             0.0f, 0.0f,
             1.0f, 0.0f,
     };
-    private FloatBuffer mPositionBuffer;
-    private FloatBuffer mTextureBuffer;
+    protected FloatBuffer mPositionBuffer;
+    protected FloatBuffer mTextureBuffer;
 
     public Filter(Context context) {
-        this(context, TextResourceReader.readTextFileFromResource(context, R.raw.texture_vertex_shader)
-                , TextResourceReader.readTextFileFromResource(context, R.raw.texture_fragment_shader));
+        this(context, TextResourceReader.readTextFileFromAssets(context, "normal/texture_vertex_shader.glsl")
+                , TextResourceReader.readTextFileFromAssets(context, "normal/texture_fragment_shader.glsl"));
     }
 
     public Filter(Context context, String vertextShader, String fragmentShader) {
@@ -66,7 +62,7 @@ public class Filter implements IFilter {
 
     @Override
     public void initBuffer() {
-        if (mWidth != -1 && mHeight != -1) {
+        if (mWidth == -1 || mHeight == -1) {
             return;
         }
         mFrameBuffers = new int[1];
@@ -93,26 +89,32 @@ public class Filter implements IFilter {
     }
 
     public void destroyBuffer() {
-        GLES20.glDeleteTextures(1, mFrameBufferTextures, 0);
-        GLES20.glDeleteFramebuffers(1, mFrameBuffers, 0);
+        if (mFrameBuffers != null) {
+            GLES20.glDeleteFramebuffers(1, mFrameBuffers, 0);
+        }
+        if (mFrameBufferTextures != null) {
+            GLES20.glDeleteTextures(1, mFrameBufferTextures, 0);
+        }
+        mWidth = -1;
+        mHeight = -1;
     }
 
     @Override
     public void init() {
         uTextureUnitLocation = glGetUniformLocation(mProgram, "s_texture");
         uMatrixLocation = glGetUniformLocation(mProgram, "vMatrix");
-        uvCoordMatrixLocation = glGetUniformLocation(mProgram, "vMatrix");
+        uTexMtxLocation = glGetUniformLocation(mProgram, "uTexMtx");
         aPositionLocation = glGetAttribLocation(mProgram, "a_Position");
         aTextureCoordinatesLocation = glGetAttribLocation(mProgram, "a_TextureCoordinates");
-        mPositionBuffer = ByteBuffer.allocateDirect(TextureRotationUtil.CUBE.length * 4)
+        mPositionBuffer = ByteBuffer.allocateDirect(positionVertex.length * 4)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
-        mPositionBuffer.put(TextureRotationUtil.CUBE).position(0);
+        mPositionBuffer.put(positionVertex).position(0);
 
-        mTextureBuffer = ByteBuffer.allocateDirect(TextureRotationUtil.TEXTURE_NO_ROTATION.length * 4)
+        mTextureBuffer = ByteBuffer.allocateDirect(textureVertex.length * 4)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
-        mTextureBuffer.put(TextureRotationUtil.getRotation(Rotation.NORMAL, false, false)).position(0);
+        mTextureBuffer.put(textureVertex).position(0);
     }
 
     @Override
@@ -133,7 +135,7 @@ public class Filter implements IFilter {
 
     @Override
     public int drawToTexture(int texture) {
-        if (mWidth != -1 && mHeight != -1) {
+        if (mWidth == -1 || mHeight == -1) {
             return 0;
         }
         GLES20.glViewport(0, 0, mWidth, mHeight);
@@ -146,9 +148,9 @@ public class Filter implements IFilter {
         GLES20.glVertexAttribPointer(aTextureCoordinatesLocation, 2, GLES20.GL_FLOAT, false, 0, mTextureBuffer);
         GLES20.glEnableVertexAttribArray(aTextureCoordinatesLocation);
         GLES20.glUniformMatrix4fv(uMatrixLocation, 1, false, mPositionMatrix, 0);
-        GLES20.glUniformMatrix4fv(uvCoordMatrixLocation, 1, false, mTextureMatrix, 0);
+        GLES20.glUniformMatrix4fv(uTexMtxLocation, 1, false, mTextureMatrix, 0);
 
-        if (texture != OpenGlUtils.NO_TEXTURE) {
+        if (texture != -1) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
             GLES20.glUniform1i(uTextureUnitLocation, 0);
@@ -158,8 +160,15 @@ public class Filter implements IFilter {
         GLES20.glDisableVertexAttribArray(aPositionLocation);
         GLES20.glDisableVertexAttribArray(aTextureCoordinatesLocation);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+
+        doThings();
+
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
         return mFrameBufferTextures[0];
+
+    }
+
+    protected void doThings() {
 
     }
 }

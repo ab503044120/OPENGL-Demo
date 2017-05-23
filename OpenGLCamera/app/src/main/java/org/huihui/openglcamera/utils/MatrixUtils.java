@@ -121,7 +121,10 @@ public class MatrixUtils {
         scaleM(m, 0, x, y, 1);
         return m;
     }
-
+    public static float[] translate(float[] m, float x, float y) {
+        translateM(m, 0, x, y, 0);
+        return m;
+    }
     public static float[] getOriginalMatrix() {
         return new float[]{
                 1, 0, 0, 0,
