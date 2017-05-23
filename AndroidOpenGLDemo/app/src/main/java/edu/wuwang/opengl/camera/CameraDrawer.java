@@ -7,27 +7,18 @@
  */
 package edu.wuwang.opengl.camera;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.util.Arrays;
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
-
 import android.content.res.Resources;
-import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
-import android.opengl.Matrix;
-import android.util.Log;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
 
 import edu.wuwang.opengl.filter.AFilter;
 import edu.wuwang.opengl.filter.OesFilter;
 import edu.wuwang.opengl.utils.Gl2Utils;
-import edu.wuwang.opengl.utils.ShaderUtils;
 
 /**
  * Description:

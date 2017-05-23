@@ -120,9 +120,11 @@ public class CameraRender implements GLSurfaceView.Renderer {
         mMagicCameraInputFilter.initCameraFrameBuffer(imageWidth, imageHeight);
         Bitmap bitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.watermark);
         Bitmap bitmap1 = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.watermark);
+        Bitmap bitmap2 = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.watermark);
         mGPUImageFilter.onDisplaySizeChanged(width, height);
         cameraInputFilter.setWatermark(new Watermark(bitmap, bitmap.getWidth(), bitmap.getHeight(), WatermarkPosition.WATERMARK_ORIENTATION_TOP_LEFT, 100, 100));
         cameraInputFilter1.setWatermark(new Watermark(bitmap1, bitmap1.getWidth(), bitmap1.getHeight(), WatermarkPosition.WATERMARK_ORIENTATION_TOP_LEFT, 100, 100));
+        mGPUImageFilter.setWatermark(new Watermark(bitmap2, bitmap2.getWidth(), bitmap2.getHeight(), WatermarkPosition.WATERMARK_ORIENTATION_TOP_LEFT, 100, 100));
 
     }
 
@@ -144,7 +146,7 @@ public class CameraRender implements GLSurfaceView.Renderer {
             int drawToTexture = cameraInputFilter1.onDrawToTexture(fbo2);
             glViewport(0, 0, surfaceWidth, surfaceHeight);
             mGPUImageFilter.onDrawFrame(drawToTexture, gLCubeBuffer, gLTextureBuffer);
-//            cameraInputFilter.drawWatermark();
+//            cameraInputFilter1.drawWatermark();
         }
     }
 
