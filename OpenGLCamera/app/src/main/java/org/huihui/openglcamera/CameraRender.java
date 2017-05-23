@@ -28,7 +28,7 @@ import java.nio.FloatBuffer;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import static android.opengl.GLES20.glViewport;
+import static android.opengl.GLES20.*;
 
 /**
  * Created by Administrator on 2017/5/6.
