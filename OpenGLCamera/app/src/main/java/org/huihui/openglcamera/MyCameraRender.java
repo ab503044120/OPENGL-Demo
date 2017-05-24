@@ -10,7 +10,6 @@ import android.util.Log;
 
 import com.seu.magicfilter.camera.CameraEngine;
 import com.seu.magicfilter.camera.utils.CameraInfo;
-import com.seu.magicfilter.utils.Rotation;
 import com.seu.magicfilter.utils.TextureRotationUtil;
 import com.seu.magicfilter.water.WaterGPUImageFilter;
 import com.seu.magicfilter.water.Watermark;
@@ -86,7 +85,6 @@ public class MyCameraRender implements GLSurfaceView.Renderer {
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         mCameraInputFilter = new CameraInputFilter(mContext);
         mWaterFilter = new WaterFilter(mContext);
-
         mGPUImageFilter = new WaterGPUImageFilter();
         mGPUImageFilter.init();
         mTextureId = TextureHelper.genTexture();
@@ -113,7 +111,6 @@ public class MyCameraRender implements GLSurfaceView.Renderer {
         mWaterFilter.setInputSize(imageWidth, imageHeight);
         mWaterFilter.initBuffer();
 
-        Bitmap bitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.watermark);
         Bitmap bitmap1 = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.watermark);
         Bitmap bitmap2 = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.watermark);
         mGPUImageFilter.onDisplaySizeChanged(width, height);
@@ -133,12 +130,10 @@ public class MyCameraRender implements GLSurfaceView.Renderer {
         mSurfaceTexture.updateTexImage();
         float[] mtx = new float[16];
         mSurfaceTexture.getTransformMatrix(mtx);
-//        cameraInputFilter.setTextureTransformMatrix(mtx);
         int fbo1 = mCameraInputFilter.drawToTexture(mTextureId);
         int fbo2 = mWaterFilter.drawToTexture(fbo1);
         glViewport(0, 0, surfaceWidth, surfaceHeight);
         mGPUImageFilter.onDrawFrame(fbo2, gLCubeBuffer, gLTextureBuffer);
-//            cameraInputFilter1.drawWatermark();
     }
 
 
@@ -159,8 +154,7 @@ public class MyCameraRender implements GLSurfaceView.Renderer {
     }
 
     protected void adjustSize(int rotation, boolean flipHorizontal, boolean flipVertical) {
-        float[] textureCords = TextureRotationUtil.getRotation(Rotation.fromInt(rotation),
-                flipHorizontal, flipVertical);
+        float[] textureCords = TextureRotationUtil.TEXTURE_NO_ROTATION;
         float[] cube = TextureRotationUtil.CUBE;
         float ratio1 = (float) surfaceWidth / imageWidth;
         float ratio2 = (float) surfaceHeight / imageHeight;

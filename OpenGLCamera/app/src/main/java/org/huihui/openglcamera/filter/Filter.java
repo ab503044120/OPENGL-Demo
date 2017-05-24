@@ -31,7 +31,7 @@ public class Filter implements IFilter {
     protected int mHeight = -1;
     //这里必须有一个沿着y轴翻转
     protected float[] mPositionMatrix = MatrixUtils.flip(MatrixUtils.IdentityM(16), false, true);
-    protected float[] mTextureMatrix = MatrixUtils.IdentityM(16);//
+    protected float[] mTextureMatrix = MatrixUtils.IdentityM(16);
     protected int[] mFrameBuffers;
     protected int[] mFrameBufferTextures;
     protected float[] positionVertex = {
@@ -125,12 +125,12 @@ public class Filter implements IFilter {
 
     @Override
     public void setPositionMatrix(float[] matrix) {
-
+        mPositionMatrix = matrix;
     }
 
     @Override
     public void setTextureMatrix(float[] matrix) {
-
+        mTextureMatrix = matrix;
     }
 
     @Override

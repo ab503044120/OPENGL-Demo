@@ -90,25 +90,25 @@ public class WaterFilter extends Filter {
             leftX = -rightX;
             rightX = -temp;
         }
-        if (isTop) {
+        if (!isTop) {
             temp = topY;
             topY = -bottomY;
             bottomY = -temp;
         }
-//        final float watermarkCoords[] = {
-//                leftX, bottomY, 0.0f,
-//                rightX, bottomY, 0.0f,
-//                leftX, topY, 0.0f,
-//                rightX, topY, 0.0f,
-//
-//        };
         final float watermarkCoords[] = {
-                topY, leftX, 0.0f,
-                topY, rightX, 0.0f,
-                bottomY, leftX, 0.0f,
-                bottomY, rightX, 0.0f,
+                leftX, bottomY, 0.0f,
+                rightX, bottomY, 0.0f,
+                leftX, topY, 0.0f,
+                rightX, topY, 0.0f,
 
         };
+//        final float watermarkCoords[] = {
+//                topY, leftX, 0.0f,
+//                topY, rightX, 0.0f,
+//                bottomY, leftX, 0.0f,
+//                bottomY, rightX, 0.0f,
+//
+//        };
         ByteBuffer bb = ByteBuffer.allocateDirect(watermarkCoords.length * 4);
         bb.order(ByteOrder.nativeOrder());
         mWatermarkVertexBuffer = bb.asFloatBuffer();
