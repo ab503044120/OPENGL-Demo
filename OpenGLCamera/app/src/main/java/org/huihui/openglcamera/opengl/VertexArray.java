@@ -6,7 +6,7 @@
  * We make no guarantees that this code is fit for any purpose. 
  * Visit http://www.pragmaticprogrammer.com/titles/kbogla for more book information.
  ***/
-package org.huihui.openglcamera;
+package org.huihui.openglcamera.opengl;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -15,14 +15,13 @@ import java.nio.FloatBuffer;
 import static android.opengl.GLES20.GL_FLOAT;
 import static android.opengl.GLES20.glEnableVertexAttribArray;
 import static android.opengl.GLES20.glVertexAttribPointer;
-import static org.huihui.openglcamera.Constants.BYTES_PER_FLOAT;
 
 public class VertexArray {
     private final FloatBuffer floatBuffer;
 
     public VertexArray(float[] vertexData) {
         floatBuffer = ByteBuffer
-                .allocateDirect(vertexData.length * BYTES_PER_FLOAT)
+                .allocateDirect(vertexData.length * Constants.BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer()
                 .put(vertexData);

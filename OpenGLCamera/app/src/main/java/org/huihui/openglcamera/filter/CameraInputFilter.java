@@ -6,6 +6,7 @@ import org.huihui.openglcamera.utils.MatrixUtils;
 import org.huihui.openglcamera.utils.TextResourceReader;
 
 /**
+ * 摄像头输入滤镜
  * Created by Administrator on 2017/5/23.
  */
 

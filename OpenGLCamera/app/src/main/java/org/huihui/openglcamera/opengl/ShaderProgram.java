@@ -1,4 +1,4 @@
-package org.huihui.openglcamera;
+package org.huihui.openglcamera.opengl;
 
 import android.content.Context;
 

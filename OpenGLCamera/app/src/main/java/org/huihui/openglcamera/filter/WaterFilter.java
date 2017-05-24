@@ -5,14 +5,15 @@ import android.graphics.Bitmap;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 
-import com.seu.magicfilter.water.Watermark;
-import com.seu.magicfilter.water.WatermarkPosition;
+import org.huihui.openglcamera.filter.water.Watermark;
+import org.huihui.openglcamera.filter.water.WatermarkPosition;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 /**
+ * 水印滤镜
  * Created by huihui on 2017/5/23.
  */
 

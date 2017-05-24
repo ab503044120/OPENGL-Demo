@@ -20,8 +20,8 @@ import static android.opengl.GLES20.glGetUniformLocation;
 
 public class Filter implements IFilter {
 
-    private final Context mContext;
-    private final int mProgram;
+    protected final Context mContext;
+    protected final int mProgram;
     protected int uMatrixLocation;
     protected int uTextureUnitLocation;
     protected int aPositionLocation;

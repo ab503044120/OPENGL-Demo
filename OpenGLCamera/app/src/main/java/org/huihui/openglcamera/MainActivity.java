@@ -3,7 +3,6 @@ package org.huihui.openglcamera;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
-import com.seu.magicfilter.utils.MagicParams;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -15,7 +14,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         this.surface = (CameraGLSurfaceView) findViewById(R.id.surface);
-        MagicParams.context = getApplicationContext();
     }
 
     @Override

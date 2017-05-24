@@ -1,6 +1,8 @@
-package org.huihui.openglcamera;
+package org.huihui.openglcamera.opengl;
 
 import android.content.Context;
+
+import org.huihui.openglcamera.R;
 
 import static android.opengl.GLES20.*;
 

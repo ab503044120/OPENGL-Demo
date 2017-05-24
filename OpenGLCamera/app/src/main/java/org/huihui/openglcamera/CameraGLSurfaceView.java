@@ -13,7 +13,7 @@ import org.huihui.openglcamera.camera.CameraEngine;
  */
 
 public class CameraGLSurfaceView extends GLSurfaceView {
-    private MyCameraRender mRenderer;
+    private CameraRender mRenderer;
 
     public CameraGLSurfaceView(Context context) {
         this(context, null);
@@ -26,7 +26,7 @@ public class CameraGLSurfaceView extends GLSurfaceView {
 
     private void init() {
         setEGLContextClientVersion(2);
-        mRenderer = new MyCameraRender(getContext(), this);
+        mRenderer = new CameraRender(getContext(), this);
         setRenderer(mRenderer);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }
