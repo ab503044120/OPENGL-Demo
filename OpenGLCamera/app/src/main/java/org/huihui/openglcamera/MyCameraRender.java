@@ -8,17 +8,17 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
 
-import com.seu.magicfilter.camera.CameraEngine;
-import com.seu.magicfilter.camera.utils.CameraInfo;
-import com.seu.magicfilter.utils.TextureRotationUtil;
 import com.seu.magicfilter.water.WaterGPUImageFilter;
 import com.seu.magicfilter.water.Watermark;
 import com.seu.magicfilter.water.WatermarkPosition;
 import com.seu.magicfilter.widget.base.MagicBaseView;
 
+import org.huihui.openglcamera.camera.CameraEngine;
+import org.huihui.openglcamera.camera.utils.CameraInfo;
 import org.huihui.openglcamera.filter.CameraInputFilter;
 import org.huihui.openglcamera.filter.WaterFilter;
 import org.huihui.openglcamera.utils.TextureHelper;
+import org.huihui.openglcamera.utils.TextureRotationUtil;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

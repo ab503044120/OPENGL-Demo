@@ -5,7 +5,8 @@ import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 
-import com.seu.magicfilter.camera.CameraEngine;
+import org.huihui.openglcamera.camera.CameraEngine;
+
 
 /**
  * Created by Administrator on 2017/5/6.
