@@ -4,12 +4,15 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.SurfaceTexture;
+import android.opengl.EGL14;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.os.Environment;
 import android.util.Log;
 
 import org.huihui.openglcamera.camera.CameraEngine;
 import org.huihui.openglcamera.camera.utils.CameraInfo;
+import org.huihui.openglcamera.encode.video.TextureMovieEncoder;
 import org.huihui.openglcamera.filter.CameraInputFilter;
 import org.huihui.openglcamera.filter.ScreenOutputFilter;
 import org.huihui.openglcamera.filter.WaterFilter;
@@ -18,6 +21,7 @@ import org.huihui.openglcamera.filter.water.WatermarkPosition;
 import org.huihui.openglcamera.utils.TextureHelper;
 import org.huihui.openglcamera.utils.TextureRotationUtil;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -59,6 +63,13 @@ public class CameraRender implements GLSurfaceView.Renderer {
     private CameraInputFilter mCameraInputFilter;
     private WaterFilter mWaterFilter;
     private ScreenOutputFilter mScreenOutputFilter;
+    private boolean recordingEnabled = true;
+    private int recordingStatus;
+    private static final int RECORDING_OFF = 0;
+    private static final int RECORDING_ON = 1;
+    private static final int RECORDING_RESUMED = 2;
+    private static TextureMovieEncoder videoEncoder = new TextureMovieEncoder();
+    private File outputFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/camera.mp4");
 
     public CameraRender(Context context, GLSurfaceView GLSurfaceView) {
         mContext = context;
@@ -91,6 +102,12 @@ public class CameraRender implements GLSurfaceView.Renderer {
                 mGLSurfaceView.requestRender();
             }
         });
+        recordingEnabled = videoEncoder.isRecording();
+        if (recordingEnabled)
+            recordingStatus = RECORDING_RESUMED;
+        else
+            recordingStatus = RECORDING_OFF;
+        recordingEnabled = true;
     }
 
     @Override
@@ -112,7 +129,7 @@ public class CameraRender implements GLSurfaceView.Renderer {
         Bitmap bitmap1 = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.watermark);
 
         mWaterFilter.setWatermark(new Watermark(bitmap1, bitmap1.getWidth(), bitmap1.getHeight(), WatermarkPosition.WATERMARK_ORIENTATION_TOP_LEFT, 100, 100));
-
+        videoEncoder.setFilter(mScreenOutputFilter);
 
     }
 
@@ -123,6 +140,43 @@ public class CameraRender implements GLSurfaceView.Renderer {
             Log.e(TAG, "mSurfaceTexture is null");
             return;
         }
+
+        if (recordingEnabled) {
+            switch (recordingStatus) {
+                case RECORDING_OFF:
+                    CameraInfo info = CameraEngine.getCameraInfo();
+                    videoEncoder.setPreviewSize(info.previewWidth, info.pictureHeight);
+                    videoEncoder.setTextureBuffer(gLTextureBuffer);
+                    videoEncoder.setCubeBuffer(gLCubeBuffer);
+                    videoEncoder.startRecording(new TextureMovieEncoder.EncoderConfig(
+                            outputFile, info.previewWidth, info.pictureHeight,
+                            1000000, EGL14.eglGetCurrentContext(),
+                            info));
+                    recordingStatus = RECORDING_ON;
+                    break;
+                case RECORDING_RESUMED:
+                    videoEncoder.updateSharedContext(EGL14.eglGetCurrentContext());
+                    recordingStatus = RECORDING_ON;
+                    break;
+                case RECORDING_ON:
+                    break;
+                default:
+                    throw new RuntimeException("unknown status " + recordingStatus);
+            }
+        } else {
+            switch (recordingStatus) {
+                case RECORDING_ON:
+                case RECORDING_RESUMED:
+                    videoEncoder.stopRecording();
+                    recordingStatus = RECORDING_OFF;
+                    break;
+                case RECORDING_OFF:
+                    break;
+                default:
+                    throw new RuntimeException("unknown status " + recordingStatus);
+            }
+        }
+
         mSurfaceTexture.updateTexImage();
         float[] mtx = new float[16];
         mSurfaceTexture.getTransformMatrix(mtx);
@@ -130,6 +184,8 @@ public class CameraRender implements GLSurfaceView.Renderer {
         int fbo2 = mWaterFilter.drawToTexture(fbo1);
         glViewport(0, 0, surfaceWidth, surfaceHeight);
         mScreenOutputFilter.drawToScrren(fbo2);
+        videoEncoder.setTextureId(fbo2);
+        videoEncoder.frameAvailable(mSurfaceTexture);
     }
 
 
