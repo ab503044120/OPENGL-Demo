@@ -29,6 +29,8 @@ public class Filter implements IFilter {
     protected int uTexMtxLocation;
     protected int mWidth = -1;
     protected int mHeight = -1;
+    protected int mScreenWidth = -1;
+    protected int mScreenHeight = -1;
     //这里必须有一个沿着y轴翻转
     protected float[] mPositionMatrix = MatrixUtils.flip(MatrixUtils.IdentityM(16), false, true);
     protected float[] mTextureMatrix = MatrixUtils.IdentityM(16);
@@ -133,6 +135,12 @@ public class Filter implements IFilter {
         mTextureMatrix = matrix;
     }
 
+    /**
+     * 绘制到纹理中
+     *
+     * @param texture
+     * @return
+     */
     @Override
     public int drawToTexture(int texture) {
         if (mWidth == -1 || mHeight == -1) {
@@ -167,6 +175,56 @@ public class Filter implements IFilter {
         return mFrameBufferTextures[0];
 
     }
+
+    /**
+     * 绘制到屏幕中
+     *
+     * @param texture
+     */
+    @Override
+    public void drawToScreen(int texture) {
+        if (mScreenHeight == -1 || mScreenWidth == -1) {
+            return;
+        }
+        GLES20.glViewport(0, 0, mScreenWidth, mScreenHeight);
+        GLES20.glUseProgram(mProgram);
+        mPositionBuffer.position(0);
+        GLES20.glVertexAttribPointer(aPositionLocation, 2, GLES20.GL_FLOAT, false, 0, mPositionBuffer);
+        GLES20.glEnableVertexAttribArray(aPositionLocation);
+        mTextureBuffer.position(0);
+        GLES20.glVertexAttribPointer(aTextureCoordinatesLocation, 2, GLES20.GL_FLOAT, false, 0, mTextureBuffer);
+        GLES20.glEnableVertexAttribArray(aTextureCoordinatesLocation);
+        GLES20.glUniformMatrix4fv(uMatrixLocation, 1, false, mPositionMatrix, 0);
+        GLES20.glUniformMatrix4fv(uTexMtxLocation, 1, false, mTextureMatrix, 0);
+
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
+        GLES20.glUniform1i(uTextureUnitLocation, 0);
+
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+        GLES20.glDisableVertexAttribArray(aPositionLocation);
+        GLES20.glDisableVertexAttribArray(aTextureCoordinatesLocation);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+    }
+
+    /**
+     * 使用此函数之前请先调用
+     * <p>
+     * setInputSize()设置输入的纹理尺寸
+     *
+     * @param width
+     * @param height
+     */
+    public void setOutputSize(int width, int height) {
+        mScreenWidth = width;
+        mScreenHeight = height;
+        adjustShow();
+    }
+
+    private void adjustShow() {
+        MatrixUtils.getMatrix(mPositionMatrix, 1, mWidth, mHeight, mScreenWidth, mScreenHeight);
+    }
+
 
     protected void doThings() {
 

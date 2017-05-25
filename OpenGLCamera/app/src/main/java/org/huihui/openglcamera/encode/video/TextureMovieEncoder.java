@@ -25,7 +25,7 @@ import android.util.Log;
 
 import org.huihui.openglcamera.camera.utils.CameraInfo;
 import org.huihui.openglcamera.encode.gles.EglCore;
-import org.huihui.openglcamera.filter.ScreenOutputFilter;
+import org.huihui.openglcamera.filter.Filter;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,9 +52,9 @@ import java.nio.FloatBuffer;
  * <li>call TextureMovieEncoder#startRecording() with the config
  * <li>call TextureMovieEncoder#setTextureId() with the texture object that receives frames
  * <li>for each frame, after latching it with SurfaceTexture#updateTexImage(),
- *     call TextureMovieEncoder#frameAvailable().
+ * call TextureMovieEncoder#frameAvailable().
  * </ul>
- *
+ * <p>
  * TODO: tweak the API (esp. textureId) so it's less awkward for simple use cases.
  */
 public class TextureMovieEncoder implements Runnable {
@@ -83,7 +83,7 @@ public class TextureMovieEncoder implements Runnable {
     private boolean mRunning;
     private FloatBuffer gLCubeBuffer;
     private FloatBuffer gLTextureBuffer;
-    private ScreenOutputFilter mFilter;
+    private Filter mFilter;
 
     public TextureMovieEncoder() {
 
@@ -97,7 +97,7 @@ public class TextureMovieEncoder implements Runnable {
      * under us).
      * <p>
      * TODO: make frame rate and iframe interval configurable?  Maybe use builder pattern
-     *       with reasonable defaults for those and bit rate.
+     * with reasonable defaults for those and bit rate.
      */
     public static class EncoderConfig {
         final File mOutputFile;
@@ -107,7 +107,7 @@ public class TextureMovieEncoder implements Runnable {
         final EGLContext mEglContext;
 
         public EncoderConfig(File outputFile, int width, int height, int bitRate,
-                EGLContext sharedEglContext, CameraInfo info) {
+                             EGLContext sharedEglContext, CameraInfo info) {
             mOutputFile = outputFile;
             mWidth = width;
             mHeight = height;
@@ -238,6 +238,7 @@ public class TextureMovieEncoder implements Runnable {
     /**
      * Encoder thread entry point.  Establishes Looper/Handler and waits for messages.
      * <p>
+     *
      * @see Thread#run()
      */
     @Override
@@ -322,13 +323,14 @@ public class TextureMovieEncoder implements Runnable {
      * The texture is rendered onto the encoder's input surface, along with a moving
      * box (just because we can).
      * <p>
-     * @param transform The texture transform, from SurfaceTexture.
+     *
+     * @param transform      The texture transform, from SurfaceTexture.
      * @param timestampNanos The frame's timestamp, from SurfaceTexture.
      */
     private void handleFrameAvailable(float[] transform, long timestampNanos) {
         if (VERBOSE) Log.d(TAG, "handleFrameAvailable tr=" + transform);
         mVideoEncoder.drainEncoder(false);
-        mFilter.drawToScrren(mTextureId);
+        mFilter.drawToScreen(mTextureId);
 
         mInputWindowSurface.setPresentationTime(timestampNanos);
         mInputWindowSurface.swapBuffers();
@@ -383,26 +385,15 @@ public class TextureMovieEncoder implements Runnable {
     }
 
     private void prepareEncoder(EGLContext sharedContext, int width, int height, int bitRate,
-            File outputFile) {
+                                File outputFile) {
         try {
             mVideoEncoder = new VideoEncoderCore(width, height, bitRate, outputFile);
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
         }
-        mVideoWidth = width;
-        mVideoHeight = height;
         mEglCore = new EglCore(sharedContext, EglCore.FLAG_RECORDABLE);
         mInputWindowSurface = new WindowSurface(mEglCore, mVideoEncoder.getInputSurface(), true);
         mInputWindowSurface.makeCurrent();
-
-//        mInput = new MagicCameraInputFilter();
-//        mInput.init();
-//        filter = MagicFilterFactory.initFilters(type);
-//        if(filter != null){
-//            filter.init();
-//            filter.onInputSizeChanged(mPreviewWidth, mPreviewHeight);
-//            filter.onDisplaySizeChanged(mVideoWidth, mVideoHeight);
-//        }
     }
 
     private void releaseEncoder() {
@@ -425,15 +416,7 @@ public class TextureMovieEncoder implements Runnable {
 //            type = MagicFilterType.NONE;
 //        }
     }
-    private int mPreviewWidth = -1;
-    private int mPreviewHeight = -1;
-    private int mVideoWidth = -1;
-    private int mVideoHeight = -1;
 
-    public void setPreviewSize(int width, int height){
-        mPreviewWidth = width;
-        mPreviewHeight = height;
-    }
 
     public void setTextureBuffer(FloatBuffer gLTextureBuffer) {
         this.gLTextureBuffer = gLTextureBuffer;
@@ -443,7 +426,7 @@ public class TextureMovieEncoder implements Runnable {
         this.gLCubeBuffer = gLCubeBuffer;
     }
 
-    public void setFilter(ScreenOutputFilter filter){
+    public void setFilter(Filter filter) {
         mFilter = filter;
     }
 }

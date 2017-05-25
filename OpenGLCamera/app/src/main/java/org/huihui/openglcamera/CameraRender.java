@@ -14,6 +14,7 @@ import org.huihui.openglcamera.camera.CameraEngine;
 import org.huihui.openglcamera.camera.utils.CameraInfo;
 import org.huihui.openglcamera.encode.video.TextureMovieEncoder;
 import org.huihui.openglcamera.filter.CameraInputFilter;
+import org.huihui.openglcamera.filter.EncodeOutputFilter;
 import org.huihui.openglcamera.filter.ScreenOutputFilter;
 import org.huihui.openglcamera.filter.WaterFilter;
 import org.huihui.openglcamera.filter.water.Watermark;
@@ -70,6 +71,7 @@ public class CameraRender implements GLSurfaceView.Renderer {
     private static final int RECORDING_RESUMED = 2;
     private static TextureMovieEncoder videoEncoder = new TextureMovieEncoder();
     private File outputFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/camera.mp4");
+    private EncodeOutputFilter mEncodeOutputFilter;
 
     public CameraRender(Context context, GLSurfaceView GLSurfaceView) {
         mContext = context;
@@ -94,7 +96,15 @@ public class CameraRender implements GLSurfaceView.Renderer {
         mCameraInputFilter = new CameraInputFilter(mContext);
         mWaterFilter = new WaterFilter(mContext);
         mScreenOutputFilter = new ScreenOutputFilter(mContext);
+        mEncodeOutputFilter = new EncodeOutputFilter(mContext);
         mTextureId = TextureHelper.genTexture();
+        recordingEnabled = videoEncoder.isRecording();
+        if (recordingEnabled)
+            recordingStatus = RECORDING_RESUMED;
+        else
+            recordingStatus = RECORDING_OFF;
+        recordingEnabled = true;
+
         mSurfaceTexture = new SurfaceTexture(mTextureId);
         mSurfaceTexture.setOnFrameAvailableListener(new SurfaceTexture.OnFrameAvailableListener() {
             @Override
@@ -102,12 +112,7 @@ public class CameraRender implements GLSurfaceView.Renderer {
                 mGLSurfaceView.requestRender();
             }
         });
-        recordingEnabled = videoEncoder.isRecording();
-        if (recordingEnabled)
-            recordingStatus = RECORDING_RESUMED;
-        else
-            recordingStatus = RECORDING_OFF;
-        recordingEnabled = true;
+
     }
 
     @Override
@@ -125,11 +130,14 @@ public class CameraRender implements GLSurfaceView.Renderer {
         mWaterFilter.initBuffer();
         mScreenOutputFilter.setInputSize(imageWidth, imageHeight);
         mScreenOutputFilter.setOutputSize(width, height);
-        mScreenOutputFilter.setInputSize(imageWidth, imageHeight);
+
+        mEncodeOutputFilter.setInputSize(imageWidth,imageHeight);
+        mEncodeOutputFilter.setOutputSize(imageWidth,imageHeight);
+
         Bitmap bitmap1 = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.watermark);
 
         mWaterFilter.setWatermark(new Watermark(bitmap1, bitmap1.getWidth(), bitmap1.getHeight(), WatermarkPosition.WATERMARK_ORIENTATION_TOP_LEFT, 100, 100));
-        videoEncoder.setFilter(mScreenOutputFilter);
+        videoEncoder.setFilter(mEncodeOutputFilter);
 
     }
 
@@ -145,11 +153,10 @@ public class CameraRender implements GLSurfaceView.Renderer {
             switch (recordingStatus) {
                 case RECORDING_OFF:
                     CameraInfo info = CameraEngine.getCameraInfo();
-                    videoEncoder.setPreviewSize(info.previewWidth, info.pictureHeight);
                     videoEncoder.setTextureBuffer(gLTextureBuffer);
                     videoEncoder.setCubeBuffer(gLCubeBuffer);
                     videoEncoder.startRecording(new TextureMovieEncoder.EncoderConfig(
-                            outputFile, info.previewWidth, info.pictureHeight,
+                            outputFile, info.previewHeight, info.previewWidth,
                             1000000, EGL14.eglGetCurrentContext(),
                             info));
                     recordingStatus = RECORDING_ON;
@@ -167,7 +174,7 @@ public class CameraRender implements GLSurfaceView.Renderer {
             switch (recordingStatus) {
                 case RECORDING_ON:
                 case RECORDING_RESUMED:
-                    videoEncoder.stopRecording();
+//                    videoEncoder.stopRecording();
                     recordingStatus = RECORDING_OFF;
                     break;
                 case RECORDING_OFF:
@@ -183,7 +190,7 @@ public class CameraRender implements GLSurfaceView.Renderer {
         int fbo1 = mCameraInputFilter.drawToTexture(mTextureId);
         int fbo2 = mWaterFilter.drawToTexture(fbo1);
         glViewport(0, 0, surfaceWidth, surfaceHeight);
-        mScreenOutputFilter.drawToScrren(fbo2);
+        mScreenOutputFilter.drawToScreen(fbo2);
         videoEncoder.setTextureId(fbo2);
         videoEncoder.frameAvailable(mSurfaceTexture);
     }
@@ -204,5 +211,9 @@ public class CameraRender implements GLSurfaceView.Renderer {
             CameraEngine.startPreview(mSurfaceTexture);
     }
 
+    public void stopRecord() {
+        recordingEnabled = false;
+        videoEncoder.stopRecording();
+    }
 
 }

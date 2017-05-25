@@ -20,4 +20,7 @@ public interface IFilter {
 
     public int drawToTexture(int texture);
 
+    public void setOutputSize(int width, int height);
+
+    public void drawToScreen(int texture);
 }
