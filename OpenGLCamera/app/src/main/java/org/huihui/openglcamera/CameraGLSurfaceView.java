@@ -56,6 +56,7 @@ public class CameraGLSurfaceView extends GLSurfaceView {
 //            }
 //        });
         super.onPause();
+        mRenderer.stopRecord();
     }
 
 }

@@ -103,13 +103,6 @@ public class WaterFilter extends Filter {
                 rightX, topY, 0.0f,
 
         };
-//        final float watermarkCoords[] = {
-//                topY, leftX, 0.0f,
-//                topY, rightX, 0.0f,
-//                bottomY, leftX, 0.0f,
-//                bottomY, rightX, 0.0f,
-//
-//        };
         ByteBuffer bb = ByteBuffer.allocateDirect(watermarkCoords.length * 4);
         bb.order(ByteOrder.nativeOrder());
         mWatermarkVertexBuffer = bb.asFloatBuffer();
