@@ -365,23 +365,12 @@ public class TextureMovieEncoder implements Runnable {
 
         // Release the EGLSurface and EGLContext.
         mInputWindowSurface.releaseEglSurface();
-//        mInput.destroy();
         mEglCore.release();
 
         // Create a new EGLContext and recreate the window surface.
         mEglCore = new EglCore(newSharedContext, EglCore.FLAG_RECORDABLE);
         mInputWindowSurface.recreate(mEglCore);
         mInputWindowSurface.makeCurrent();
-
-        // Create new programs and such for the new context.
-//        mInput = new MagicCameraInputFilter();
-//        mInput.init();
-//        filter = MagicFilterFactory.initFilters(type);
-//        if(filter != null){
-//            filter.init();
-//            filter.onInputSizeChanged(mPreviewWidth, mPreviewHeight);
-//            filter.onDisplaySizeChanged(mVideoWidth, mVideoHeight);
-//        }
     }
 
     private void prepareEncoder(EGLContext sharedContext, int width, int height, int bitRate,
@@ -402,19 +391,6 @@ public class TextureMovieEncoder implements Runnable {
             mInputWindowSurface.release();
             mInputWindowSurface = null;
         }
-//        if (mInput != null) {
-//            mInput.destroy();
-//            mInput = null;
-//        }
-//        if (mEglCore != null) {
-//            mEglCore.release();
-//            mEglCore = null;
-//        }
-//        if(filter != null){
-//            filter.destroy();
-//            filter = null;
-//            type = MagicFilterType.NONE;
-//        }
     }
 
 

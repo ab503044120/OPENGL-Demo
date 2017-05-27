@@ -19,9 +19,11 @@ package org.huihui.openglcamera.encode.video;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
-import android.media.MediaMuxer;
 import android.util.Log;
 import android.view.Surface;
+
+import org.huihui.openglcamera.packer.IPacker;
+import org.huihui.openglcamera.packer.MediaMuxerPacker;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,13 +47,12 @@ public class VideoEncoderCore {
     private static final String MIME_TYPE = "video/avc";    // H.264 Advanced Video Coding
     private static final int FRAME_RATE = 30;               // 30fps
     private static final int IFRAME_INTERVAL = 5;           // 5 seconds between I-frames
+    private  IPacker mPacker;
 
     private Surface mInputSurface;
-    private MediaMuxer mMuxer;
     private MediaCodec mEncoder;
     private MediaCodec.BufferInfo mBufferInfo;
-    private int mTrackIndex;
-    private boolean mMuxerStarted;
+    private boolean mPackerStarted;
 
 
     /**
@@ -85,11 +86,10 @@ public class VideoEncoderCore {
         //
         // We're not actually interested in multiplexing audio.  We just want to convert
         // the raw H.264 elementary stream we get from MediaCodec into a .mp4 file.
-        mMuxer = new MediaMuxer(outputFile.toString(),
-                MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
-
-        mTrackIndex = -1;
-        mMuxerStarted = false;
+//        mMuxer = new MediaMuxer(outputFile.toString(),
+//                MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+        mPacker = new MediaMuxerPacker(outputFile.toString(), mEncoder);
+        mPackerStarted = false;
     }
 
     /**
@@ -109,12 +109,9 @@ public class VideoEncoderCore {
             mEncoder.release();
             mEncoder = null;
         }
-        if (mMuxer != null) {
-            // TODO: stop() throws an exception if you haven't fed it any data.  Keep track
-            //       of frames submitted, and don't call stop() if we haven't written anything.
-            mMuxer.stop();
-            mMuxer.release();
-            mMuxer = null;
+        if (mPacker != null) {
+            mPacker.stop();
+            mPacker = null;
         }
     }
 
@@ -152,16 +149,11 @@ public class VideoEncoderCore {
                 encoderOutputBuffers = mEncoder.getOutputBuffers();
             } else if (encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                 // should happen before receiving buffers, and should only happen once
-                if (mMuxerStarted) {
+                if (mPackerStarted) {
                     throw new RuntimeException("format changed twice");
                 }
-                MediaFormat newFormat = mEncoder.getOutputFormat();
-                Log.d(TAG, "encoder output format changed: " + newFormat);
-
-                // now that we have the Magic Goodies, start the muxer
-                mTrackIndex = mMuxer.addTrack(newFormat);
-                mMuxer.start();
-                mMuxerStarted = true;
+                mPacker.start();
+                mPackerStarted = true;
             } else if (encoderStatus < 0) {
                 Log.w(TAG, "unexpected result from encoder.dequeueOutputBuffer: " +
                         encoderStatus);
@@ -181,15 +173,10 @@ public class VideoEncoderCore {
                 }
 
                 if (mBufferInfo.size != 0) {
-                    if (!mMuxerStarted) {
+                    if (!mPackerStarted) {
                         throw new RuntimeException("muxer hasn't started");
                     }
-
-                    // adjust the ByteBuffer values to match BufferInfo (not needed?)
-                    encodedData.position(mBufferInfo.offset);
-                    encodedData.limit(mBufferInfo.offset + mBufferInfo.size);
-
-                    mMuxer.writeSampleData(mTrackIndex, encodedData, mBufferInfo);
+                    mPacker.onVideoData(encodedData, mBufferInfo);
                     if (VERBOSE) {
                         Log.d(TAG, "sent " + mBufferInfo.size + " bytes to muxer, ts=" +
                                 mBufferInfo.presentationTimeUs);

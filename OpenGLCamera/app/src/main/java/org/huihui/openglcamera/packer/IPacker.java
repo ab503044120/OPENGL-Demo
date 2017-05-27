@@ -1,0 +1,24 @@
+package org.huihui.openglcamera.packer;
+
+import android.media.MediaCodec;
+
+import java.nio.ByteBuffer;
+
+/**
+ * Created by Administrator on 2017/5/27.
+ */
+
+public interface IPacker {
+
+    //处理视频硬编编码器输出的数据
+    void onVideoData(ByteBuffer bb, MediaCodec.BufferInfo bi);
+
+    //处理音频硬编编码器输出的数据
+    void onAudioData(ByteBuffer bb, MediaCodec.BufferInfo bi);
+
+    //开始打包，一般进行打包的预处理
+    void start();
+
+    //结束打包，一般进行打包器的状态恢复
+    void stop();
+}
