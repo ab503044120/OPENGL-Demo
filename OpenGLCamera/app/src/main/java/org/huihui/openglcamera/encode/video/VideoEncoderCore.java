@@ -23,7 +23,7 @@ import android.util.Log;
 import android.view.Surface;
 
 import org.huihui.openglcamera.packer.IPacker;
-import org.huihui.openglcamera.packer.MediaMuxerPacker;
+import org.huihui.openglcamera.packer.RtmpPacker;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,7 +47,7 @@ public class VideoEncoderCore {
     private static final String MIME_TYPE = "video/avc";    // H.264 Advanced Video Coding
     private static final int FRAME_RATE = 30;               // 30fps
     private static final int IFRAME_INTERVAL = 5;           // 5 seconds between I-frames
-    private  IPacker mPacker;
+    private IPacker mPacker;
 
     private Surface mInputSurface;
     private MediaCodec mEncoder;
@@ -88,7 +88,8 @@ public class VideoEncoderCore {
         // the raw H.264 elementary stream we get from MediaCodec into a .mp4 file.
 //        mMuxer = new MediaMuxer(outputFile.toString(),
 //                MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
-        mPacker = new MediaMuxerPacker(outputFile.toString(), mEncoder);
+//        mPacker = new MediaMuxerPacker(outputFile.toString(), mEncoder);
+        mPacker = new RtmpPacker();
         mPackerStarted = false;
     }
 

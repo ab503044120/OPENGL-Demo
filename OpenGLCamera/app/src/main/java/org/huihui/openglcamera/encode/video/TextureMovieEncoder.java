@@ -161,6 +161,9 @@ public class TextureMovieEncoder implements Runnable {
      * has completed).
      */
     public void stopRecording() {
+        if (mHandler == null) {
+            return;
+        }
         mHandler.sendMessage(mHandler.obtainMessage(MSG_STOP_RECORDING));
         mHandler.sendMessage(mHandler.obtainMessage(MSG_QUIT));
         // We don't know when these will actually finish (or even start).  We don't want to

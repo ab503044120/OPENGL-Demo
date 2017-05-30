@@ -8,6 +8,8 @@ import android.opengl.EGL14;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import org.huihui.openglcamera.camera.CameraEngine;
@@ -19,6 +21,7 @@ import org.huihui.openglcamera.filter.ScreenOutputFilter;
 import org.huihui.openglcamera.filter.WaterFilter;
 import org.huihui.openglcamera.filter.water.Watermark;
 import org.huihui.openglcamera.filter.water.WatermarkPosition;
+import org.huihui.openglcamera.packer.RtmpPacker;
 import org.huihui.openglcamera.utils.TextureHelper;
 import org.huihui.openglcamera.utils.TextureRotationUtil;
 
@@ -64,7 +67,7 @@ public class CameraRender implements GLSurfaceView.Renderer {
     private CameraInputFilter mCameraInputFilter;
     private WaterFilter mWaterFilter;
     private ScreenOutputFilter mScreenOutputFilter;
-    private boolean recordingEnabled = true;
+    public static boolean recordingEnabled;
     private int recordingStatus;
     private static final int RECORDING_OFF = 0;
     private static final int RECORDING_ON = 1;
@@ -103,7 +106,7 @@ public class CameraRender implements GLSurfaceView.Renderer {
             recordingStatus = RECORDING_RESUMED;
         else
             recordingStatus = RECORDING_OFF;
-        recordingEnabled = true;
+//        recordingEnabled = true;
 
         mSurfaceTexture = new SurfaceTexture(mTextureId);
         mSurfaceTexture.setOnFrameAvailableListener(new SurfaceTexture.OnFrameAvailableListener() {
@@ -131,14 +134,19 @@ public class CameraRender implements GLSurfaceView.Renderer {
         mScreenOutputFilter.setInputSize(imageWidth, imageHeight);
         mScreenOutputFilter.setOutputSize(width, height);
 
-        mEncodeOutputFilter.setInputSize(imageWidth,imageHeight);
-        mEncodeOutputFilter.setOutputSize(imageWidth,imageHeight);
+        mEncodeOutputFilter.setInputSize(imageWidth, imageHeight);
+        mEncodeOutputFilter.setOutputSize(imageWidth, imageHeight);
 
         Bitmap bitmap1 = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.watermark);
 
         mWaterFilter.setWatermark(new Watermark(bitmap1, bitmap1.getWidth(), bitmap1.getHeight(), WatermarkPosition.WATERMARK_ORIENTATION_TOP_LEFT, 100, 100));
         videoEncoder.setFilter(mEncodeOutputFilter);
-
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                RtmpPacker.startRtmp();
+            }
+        }, 100);
     }
 
     @Override

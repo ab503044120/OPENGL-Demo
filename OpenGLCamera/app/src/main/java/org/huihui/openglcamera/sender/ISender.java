@@ -5,4 +5,7 @@ package org.huihui.openglcamera.sender;
  */
 
 public interface ISender {
+    void start();
+    void onData(byte[] data, int type);
+    void stop();
 }

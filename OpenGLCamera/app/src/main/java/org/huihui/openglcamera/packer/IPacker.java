@@ -9,7 +9,10 @@ import java.nio.ByteBuffer;
  */
 
 public interface IPacker {
-
+    interface OnPacketListener {
+        //第一个参数为打包后的数据，第二个为自定义打包后的类型
+        void onPacket(byte[] data, int packetType);
+    }
     //处理视频硬编编码器输出的数据
     void onVideoData(ByteBuffer bb, MediaCodec.BufferInfo bi);
 
